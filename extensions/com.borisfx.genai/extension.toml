@@ -1,0 +1,22 @@
+id          = "com.borisfx.genai"
+name        = "GenAI Emulator"
+version     = "1.0.0"
+author      = "Boris FX"
+description = """
+A complete, working simulation of a cloud video-GenAI service — every stage of
+the real pipeline runs for real, except the "cloud": the upstream comp is
+rendered to a temporary movie, served through a Cloudflare quick tunnel,
+submitted to a GenAI task API, polled, and the finished video is downloaded
+into the node's asset catalog — but the API is a bundled local emulator that
+echoes the input back after a simulated generation delay, so development and
+integration testing burn no tokens.  This extension is the reference
+implementation and documentation for adding a real service (Runway, etc.):
+see its README.md — only the service adapter and configuration change.
+"""
+# Needs the shared `genai` task engine that ships with Silhouette's scripts.
+silhouette  = ">=2026.5"
+
+python_requires = []
+
+[contributes]
+nodes = ["com.borisfx.silhouette.genai"]

@@ -1,0 +1,16 @@
+id          = "com.borisfx.samplepanel"
+name        = "Sample Panel"
+version     = "0.1.0"
+author      = "Boris FX"
+description = """
+Sample extension demonstrating fx.registerPanel.  Contributes a dockable
+PySide6 panel: loading the extension creates the panel (and its Window-menu
+entry), disabling/uninstalling removes it — no restart.  The dock keeps its
+layout slot across restarts, keyed on its stable id.
+"""
+silhouette  = ">=2026.5"
+
+python_requires = []
+
+[contributes]
+panels = ["com.borisfx.samplepanel.hello"]

@@ -1,0 +1,14 @@
+id          = "com.borisfx.deepwater"
+name        = "Deep Water Themes"
+version     = "1.0.0"
+author      = "Boris FX"
+description = """
+Low-fatigue themes in cool blue-greens, for long roto and paint sessions.
+Contrast sits between Classic and Low Contrast: flat enough to stop the chrome
+competing with the image, but not so flat that borders disappear.  Ships two
+themes - Deep Water, and a lighter Shallows that inherits most of its palette.
+"""
+silhouette  = ">=2026.5"
+
+[contributes]
+themes = ["deep-water", "shallows"]

@@ -1,0 +1,32 @@
+{
+	"name": "Deep Water",
+	"description": "Cool desaturated blue-greens. The only warm colour in the palette is AccentAttention, so anything demanding notice is the one thing that is not blue.",
+	"colors": {
+		"EdgeShadow": "#081114",
+		"ViewBackground": "#101c22",
+		"WindowBackground": "#21353f",
+		"ButtonFace": "#3b5c69",
+		"SelectionFill": "#27454f",
+		"SelectionText": "#dceaec",
+		"AccentPrimary": "#5fb3a1",
+		"AccentAttention": "#e08a5c",
+		"Warning": "#c95a4f",
+		"TextPrimary": "#cddfe3",
+		"TextDisabled": "#4d666f",
+		"TextOnButton": "#e3eff0",
+		"Icon": "#93b3b6",
+		"ActiveIcon": "#6fd0b8",
+		"NodeFill": "#223a44",
+		"NodeGroupFill": "#182c34",
+		"NodeOutline": "#527680",
+		"GraphEdge": "#72959d",
+		"PortImage": "#6fbf8f",
+		"PortMatte": "#5b8fc9",
+		"PortData": "#c9b273",
+		"PortAux": "#a87fa8",
+		"PortOutput": "#9fb0b5",
+		"TintLight": "#e8f2f3",
+		"TintNeutral": "#6f8a91",
+		"TintDark": "#060d10"
+	}
+}

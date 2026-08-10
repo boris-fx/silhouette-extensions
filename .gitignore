@@ -1,0 +1,15 @@
+# Model weights are never committed — extensions fetch them on demand, or you
+# install them by hand (see each extension's README).
+*.pt
+*.pth
+*.onnx
+*.safetensors
+
+# Build/packaging output
+dist/
+*.sfxext
+
+# Python + OS noise
+__pycache__/
+*.py[cod]
+.DS_Store

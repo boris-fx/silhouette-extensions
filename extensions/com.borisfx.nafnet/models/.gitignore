@@ -1,0 +1,7 @@
+# NAFNet checkpoints (*.pth, ~260 MB for GoPro-width64) live here but are NOT
+# committed (no Git-LFS in this repo; the SDK keeps ML weights out of git too).
+# The node's Download Model button fetches them here as a background task, or
+# drop them in manually per README.md; the folder then travels with the
+# extension when it is copied, so a target machine needs no network.
+*
+!.gitignore

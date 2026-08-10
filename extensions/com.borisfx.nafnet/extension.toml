@@ -1,0 +1,18 @@
+id          = "com.borisfx.nafnet"
+name        = "NAFNet Restore"
+version     = "1.1.0"
+author      = "Boris FX"
+description = """
+Single-image restoration node backed by NAFNet (Simple Baselines for Image
+Restoration, ECCV 2022) - GoPro deblurring by default.  A reference example of
+the Python node extension system: on-demand PyTorch (pinned to the host
+libtorch), a vendored model, and on-demand checkpoints - the node's Download
+Model button fetches the selected model's weights as a resumable,
+checksum-verified background task into models/.  Inference runs on CUDA where
+available, otherwise CPU.
+"""
+silhouette      = ">=2026.5"
+python_requires = ["torch", "numpy"]
+
+[contributes]
+nodes = ["com.borisfx.silhouette.nafnet"]

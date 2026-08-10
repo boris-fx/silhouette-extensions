@@ -1,0 +1,59 @@
+name: Package extensions
+
+# Builds a .sfxext for every extension.  On a tag push the archives are attached
+# to the GitHub release, so users can install one without cloning the repo.
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write        # needed only by the release step below
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate manifests
+        run: |
+          python - <<'PY'
+          import glob, sys, tomllib, re
+          fail = False
+          for path in sorted(glob.glob("extensions/*/extension.toml")):
+              with open(path, "rb") as f:
+                  m = tomllib.load(f)
+              ident, version = m.get("id", ""), m.get("version", "")
+              folder = path.split("/")[1]
+              if not re.match(r"^[a-zA-Z][\w-]*(\.[a-zA-Z][\w-]*)+$", ident):
+                  print(f"{path}: invalid id {ident!r}"); fail = True
+              if not re.match(r"^\d+\.\d+\.\d+(-[0-9A-Za-z.\-]+)?$", version):
+                  print(f"{path}: invalid version {version!r}"); fail = True
+              if ident != folder:
+                  print(f"{path}: id {ident!r} != folder {folder!r}"); fail = True
+              print(f"ok  {ident} {version}")
+          sys.exit(1 if fail else 0)
+          PY
+
+      - name: Compile-check every extension
+        run: python -m compileall -q extensions
+
+      - name: Build archives
+        run: ./scripts/package.py --all
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sfxext
+          path: dist/*.sfxext
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.sfxext

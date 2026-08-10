@@ -1,0 +1,11 @@
+{
+  "_comment": "NAFNet models: each entry is a Model-popup choice, the NAFNet constructor args, and the checkpoint filename expected at models/<weight>. Deblur and denoise use different block layouts, so the arch args are per-model. A 'download' block ({url, sha256, bytes}) enables the node's Download Model button, which fetches and verifies the checkpoint as a background task; without one the model is manual-install only (see README.md).",
+  "models": [
+    {"id": "gopro", "label": "Deblur - GoPro (width64)", "weight": "NAFNet-GoPro-width64.pth",
+     "width": 64, "middle_blk_num": 1, "enc_blk_nums": [1, 1, 1, 28], "dec_blk_nums": [1, 1, 1, 1],
+     "download": {
+       "url": "https://github.com/boris-fx/silhouette-extensions/releases/download/nafnet-models-1.0/NAFNet-GoPro-width64.pth",
+       "sha256": "329d3ab4077b8d6b7ff61de376e483714667960bf85be027bf4335cda701196f",
+       "bytes": 271778961}}
+  ]
+}

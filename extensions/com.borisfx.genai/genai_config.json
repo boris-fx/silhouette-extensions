@@ -1,0 +1,27 @@
+{
+	"comment" : "GenAI emulator configuration. 'models' drives the node's Model enum and per-model capability gating exactly as a real service's config would: give each model its real id plus whatever caps that service enforces (here max_seconds and tokens_per_frame). 'service' tunes the pipeline: gen_seconds is the emulator's pretend generation time; tunnel is 'auto' (use cloudflared when available, else a direct localhost URL - fine for the local emulator, required for a real remote service), 'on' (fail if unavailable), or 'off'.",
+
+	"models" :
+	[
+		{
+			"label" : "Emulator HD",
+			"id" : "emulator-hd-1",
+			"max_seconds" : 15,
+			"tokens_per_frame" : 900
+		},
+		{
+			"label" : "Emulator Turbo",
+			"id" : "emulator-turbo-1",
+			"max_seconds" : 8,
+			"tokens_per_frame" : 300
+		}
+	],
+
+	"service" :
+	{
+		"gen_seconds" : 6.0,
+		"poll_interval" : 2.0,
+		"timeout" : 900.0,
+		"tunnel" : "auto"
+	}
+}

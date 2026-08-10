@@ -1,0 +1,14 @@
+id          = "com.borisfx.testmenu"
+name        = "Test Menu"
+version     = "1.0.0"
+author      = "Boris FX"
+description = """
+A minimal example of contributing commands: two actions under a new top-level
+"Test" menu, plus one context-menu action in the Trees view.  Loading the
+extension creates the menu and unloading (disable or uninstall) removes it —
+no restart.
+"""
+silhouette  = ">=2026.5"
+
+[contributes]
+actions = ["TestSayHello", "TestSayGoodbye", "TestTreesAction"]

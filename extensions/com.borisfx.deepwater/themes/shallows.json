@@ -1,0 +1,12 @@
+{
+	"name": "Shallows",
+	"description": "Deep Water lifted a few stops, for bright rooms. Overrides five roles and inherits the other twenty-one from deep-water.",
+	"inherits": "deep-water",
+	"colors": {
+		"EdgeShadow":       "#16252b",
+		"ViewBackground":   "#1d3038",
+		"WindowBackground": "#284049",
+		"ButtonFace":       "#456a76",
+		"TextPrimary":      "#dceaed"
+	}
+}
