@@ -4,7 +4,8 @@ name: Package extensions
 # to the GitHub release, so users can install one without cloning the repo.
 on:
   push:
-    tags: ["v*"]
+    branches: [main]      # validate every change that lands
+    tags: ["v*"]          # ...and attach archives to a tagged release
   pull_request:
   workflow_dispatch:
 
