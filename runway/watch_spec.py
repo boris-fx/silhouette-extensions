@@ -6,6 +6,9 @@ this repo ("Check for New Models").  That file records, under ``spec_models``,
 every model id Runway's OpenAPI spec listed per endpoint when it was generated.
 This script fetches the live spec and reports models added or removed since —
 the cue to curate them (pricing, labels, testing) in Silhouette and republish.
+It also diffs ``spec_endpoints`` (every endpoint that takes a ``model``): a NEW
+endpoint is a new verb, which needs a new node in Silhouette — the model table
+alone can't deliver it.
 
 Writes a Markdown report and, under GitHub Actions, ``changed=true|false`` to
 $GITHUB_OUTPUT.  Stdlib only.
@@ -41,6 +44,26 @@ def spec_models(spec, verb):
     return ids
 
 
+def model_endpoints(spec):
+    """Every POST endpoint whose request picks a ``model`` (mirrors the
+    generator's model_endpoints)."""
+    out = set()
+    for path, item in spec.get("paths", {}).items():
+        op = (item or {}).get("post") or {}
+        try:
+            schema = op["requestBody"]["content"]["application/json"]["schema"]
+        except (KeyError, TypeError):
+            continue
+        for v in schema.get("oneOf") or schema.get("anyOf") or [schema]:
+            if "$ref" in v:
+                v = spec["components"]["schemas"].get(v["$ref"].split("/")[-1], {})
+            m = v.get("properties", {}).get("model", {})
+            if m.get("const") or m.get("enum"):
+                out.add(path[len("/v1/"):] if path.startswith("/v1/") else path)
+                break
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--config", required=True, help="published runway_config.json")
@@ -49,7 +72,9 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     with open(args.config) as f:
-        known = json.load(f).get("spec_models") or {}
+        published = json.load(f)
+    known = published.get("spec_models") or {}
+    known_endpoints = published.get("spec_endpoints")
     if args.spec.startswith("http"):
         req = urllib.request.Request(args.spec, headers={"User-Agent": "silhouette-runway-watch/1.0"})
         with urllib.request.urlopen(req, timeout=60) as resp:
@@ -74,6 +99,18 @@ def main(argv=None):
             if removed:
                 parts.append("removed " + ", ".join("`%s`" % m for m in removed))
             lines.append("- `%s`: %s" % (verb, "; ".join(parts)))
+
+    if known_endpoints is not None:
+        live_eps = model_endpoints(spec)
+        new_eps = sorted(live_eps - set(known_endpoints))
+        gone_eps = sorted(set(known_endpoints) - live_eps)
+        if new_eps:
+            changed = True
+            lines.append("- **new endpoints** (a new verb needs a new Silhouette node): "
+                         + ", ".join("`%s`" % e for e in new_eps))
+        if gone_eps:
+            changed = True
+            lines.append("- endpoints removed: " + ", ".join("`%s`" % e for e in gone_eps))
 
     report = ("Runway's API spec (version %s) lists different models than the "
               "published model table:\n\n%s\n\n"
