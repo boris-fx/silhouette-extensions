@@ -1,0 +1,46 @@
+name: Runway model watch
+
+# Daily: compare Runway's live OpenAPI spec with the model table Silhouette
+# fetches (runway/v1/runway_config.json).  When models were added or removed,
+# open — or refresh — a single issue labelled runway-models; when the published
+# table catches up, close it.
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: diff
+        run: python3 runway/watch_spec.py --config runway/v1/runway_config.json --out "$RUNNER_TEMP/report.md"
+
+      - name: Open or update the issue
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create runway-models --color C5DEF5 --description "Runway API model list changed" --force
+          num=$(gh issue list --state open --label runway-models --json number --jq '.[0].number')
+          if [ -n "$num" ]; then
+            gh issue edit "$num" --body-file "$RUNNER_TEMP/report.md"
+          else
+            gh issue create --title "Runway API model list changed" --label runway-models --body-file "$RUNNER_TEMP/report.md"
+          fi
+
+      - name: Close the issue once the table is current
+        if: steps.diff.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          num=$(gh issue list --state open --label runway-models --json number --jq '.[0].number')
+          if [ -n "$num" ]; then
+            gh issue close "$num" --comment "The published model table matches Runway's spec again."
+          fi
