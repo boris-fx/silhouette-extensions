@@ -44,7 +44,7 @@ to) onto Silhouette's window.  Or, from this repo:
 Extensions can be enabled, disabled, and removed individually on the
 *Preferences → Extensions* page.
 
-Requires Silhouette 2026.5 or newer (Stability AI needs 2027 or newer).
+Requires Silhouette 2027 or newer.
 
 ## Model weights are not in this repository
 

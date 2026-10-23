@@ -8,7 +8,7 @@ A minimal example of contributing commands: two actions under a new top-level
 extension creates the menu and unloading (disable or uninstall) removes it —
 no restart.
 """
-silhouette  = ">=2026.5"
+silhouette  = ">=2027"
 
 [contributes]
 actions = ["TestSayHello", "TestSayGoodbye", "TestTreesAction"]

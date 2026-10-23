@@ -8,7 +8,7 @@ PySide6 panel: loading the extension creates the panel (and its Window-menu
 entry), disabling/uninstalling removes it — no restart.  The dock keeps its
 layout slot across restarts, keyed on its stable id.
 """
-silhouette  = ">=2026.5"
+silhouette  = ">=2027"
 
 python_requires = []
 

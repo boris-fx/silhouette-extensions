@@ -41,8 +41,14 @@ Every extension needs:
 - a row in the extensions table of the top-level `README.md`: the website
   builds its cards, in that order, from that table
 
-Optionally, add a `screenshot.png` (16:9 works best) to the folder; the
-website shows it on the extension's card and page.
+Optionally, add:
+
+- an `icon.png`: a square PNG, 256 × 256 pixels.  Silhouette shows it next
+  to the extension's name on its Extensions page, and the website shows it
+  on the extension's card.  Without one, the website uses the name's first
+  letter.
+- a `screenshot.png` (16:9 works best), which the website shows on the
+  extension's card and page.
 
 And must not contain:
 

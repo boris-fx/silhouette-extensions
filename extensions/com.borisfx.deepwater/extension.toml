@@ -8,7 +8,7 @@ Contrast sits between Classic and Low Contrast: flat enough to stop the chrome
 competing with the image, but not so flat that borders disappear.  Ships two
 themes - Deep Water, and a lighter Shallows that inherits most of its palette.
 """
-silhouette  = ">=2026.5"
+silhouette  = ">=2027"
 
 [contributes]
 themes = ["deep-water", "shallows"]

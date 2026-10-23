@@ -14,7 +14,7 @@ implementation and documentation for adding a real service (Runway, etc.):
 see its README.md — only the service adapter and configuration change.
 """
 # Needs the shared `genai` task engine that ships with Silhouette's scripts.
-silhouette  = ">=2026.5"
+silhouette  = ">=2027"
 
 python_requires = []
 

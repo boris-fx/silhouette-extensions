@@ -11,7 +11,7 @@ Model button fetches the selected model's weights as a resumable,
 checksum-verified background task into models/.  Inference runs on CUDA where
 available, otherwise CPU.
 """
-silhouette      = ">=2026.5"
+silhouette      = ">=2027"
 python_requires = ["torch", "numpy"]
 
 [contributes]

@@ -26,4 +26,4 @@ body:
     id: version
     attributes:
       label: Silhouette version it works with
-      placeholder: e.g. 2026.5 and newer
+      placeholder: e.g. 2027 and newer

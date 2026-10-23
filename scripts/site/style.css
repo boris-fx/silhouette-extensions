@@ -77,6 +77,19 @@ footer.site { margin-top: 64px; padding: 24px 0 40px; border-top: 1px solid var(
   min-width: 0;
 }
 .card .shot { width: calc(100% + 40px); margin: -20px -20px 16px; border-radius: 12px 12px 0 0; display: block; aspect-ratio: 16 / 9; object-fit: cover; }
+.title { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.title > div { min-width: 0; }
+.icon { width: 48px; height: 48px; flex: none; border-radius: 10px; }
+.icon.large { width: 72px; height: 72px; border-radius: 14px; }
+/* stands in for an extension without an icon.png: its initial on a plain tile */
+.icon.tile {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--highlight); border: 1px solid var(--line);
+  color: var(--text); font-weight: 650; font-size: 22px;
+}
+.icon.large.tile { font-size: 32px; }
+.card .meta { margin-bottom: 0; }
+.card .title { margin-bottom: 12px; }
 .card h2 { font-size: 19px; margin: 0; letter-spacing: -.01em; }
 .card h2 a { color: var(--text); }
 .meta { color: var(--muted); font-size: 13.5px; margin: 4px 0 12px; }

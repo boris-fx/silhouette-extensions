@@ -15,7 +15,10 @@ take their two blurbs from it ("What it contributes", "What it demonstrates"),
 so that table is the one place to curate.  An extension missing from the table
 still gets a card, using the first sentence of its manifest description.
 
-A `screenshot.png` (or .jpg) in an extension folder is shown on its card and page.
+An extension's optional `icon.png` (square, 256x256) is shown beside its name
+on its card and page, the same icon Silhouette shows on its Extensions page;
+without one, the card shows the name's first letter on a plain tile.  An
+optional `screenshot.png` (or .jpg) is shown on the card and page too.
 
 Nothing this writes is committed: the Pages workflow runs it on every push to
 main and publishes the result.  Needs Python 3.11+ and the `markdown` package.
@@ -47,6 +50,7 @@ REPO_URL = "https://github.com/" + REPO
 
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 SCREENSHOTS = ("screenshot.png", "screenshot.jpg")
+ICON = "icon.png"
 
 # what each [contributes] key is called on a card
 CONTRIBUTES = {
@@ -75,6 +79,7 @@ class Extension:
         self.contributes = m.get("contributes", {})
         self.screenshot = next((s for s in SCREENSHOTS
                                 if os.path.isfile(os.path.join(folder, s))), None)
+        self.icon = ICON if os.path.isfile(os.path.join(folder, ICON)) else None
         readme = os.path.join(folder, "README.md")
         self.readme = open(readme, encoding="utf-8").read() if os.path.isfile(readme) else ""
         self.adds = self.shows = None          # blurbs from the README table
@@ -236,6 +241,14 @@ def meta_line(ext):
     return " · ".join(bits)
 
 
+def icon_html(ext, prefix, cls):
+    """The extension's icon, or a lettered tile standing in for it."""
+    if ext.icon:
+        return '<img class="%s" src="%s%s" alt="" width="64" height="64">' % (cls, prefix, ext.icon)
+    letter = html.escape((ext.name.strip() or ext.id)[:1].upper())
+    return '<span class="%s tile" aria-hidden="true">%s</span>' % (cls, letter)
+
+
 def download_button(ext, root):
     return ('<a class="button" href="{root}downloads/{id}.zip" download>'
             'Download <span class="size">{size} zip</span></a>').format(
@@ -259,12 +272,18 @@ def index_page(exts):
         adds = '<p class="adds">%s</p>' % ext.adds if ext.adds else ""
         cards.append("""<article class="card">
   {shot}
-  <h2><a href="{id}/">{name}</a></h2>
-  <p class="meta">{meta}</p>
+  <div class="title">
+    {icon}
+    <div>
+      <h2><a href="{id}/">{name}</a></h2>
+      <p class="meta">{meta}</p>
+    </div>
+  </div>
   {adds}
   <p class="summary">{summary}</p>
   <div class="actions">{download}<a class="more" href="{id}/">Details</a></div>
-</article>""".format(shot=shot, id=html.escape(ext.id), name=html.escape(ext.name),
+</article>""".format(shot=shot, icon=icon_html(ext, html.escape(ext.id) + "/", "icon"),
+                     id=html.escape(ext.id), name=html.escape(ext.name),
                      meta=meta_line(ext), adds=adds, summary=ext.summary,
                      download=download_button(ext, "")))
 
@@ -303,8 +322,13 @@ def extension_page(ext, page_dir):
     shot = ('<img class="shot" src="%s" alt="">' % ext.screenshot) if ext.screenshot else ""
     body = """<p class="crumbs"><a href="../">All extensions</a></p>
 <section class="ext-header">
-  <h1>{name}</h1>
-  <p class="meta"><code>{id}</code> · {meta}</p>
+  <div class="title">
+    {icon}
+    <div>
+      <h1>{name}</h1>
+      <p class="meta"><code>{id}</code> · {meta}</p>
+    </div>
+  </div>
   <p class="lede">{summary}</p>
   <div class="actions">{download}<a class="more" href="{repo}/tree/{branch}/extensions/{id}">Source on GitHub</a></div>
 </section>
@@ -316,6 +340,7 @@ def extension_page(ext, page_dir):
 <article class="readme">
 {readme}
 </article>""".format(name=html.escape(ext.name), id=html.escape(ext.id), meta=meta_line(ext),
+                     icon=icon_html(ext, "", "icon large"),
                      summary=ext.summary, download=download_button(ext, "../"), shot=shot,
                      steps=INSTALL_STEPS, readme=render_readme(ext, page_dir),
                      repo=REPO_URL, branch=BRANCH)
@@ -337,8 +362,9 @@ def build(out):
         write_zip(ext, os.path.join(out, "downloads"))
         page_dir = os.path.join(out, ext.id)
         os.makedirs(page_dir)
-        if ext.screenshot:
-            shutil.copy2(os.path.join(ext.folder, ext.screenshot), page_dir)
+        for extra in (ext.screenshot, ext.icon):
+            if extra:
+                shutil.copy2(os.path.join(ext.folder, extra), page_dir)
         with open(os.path.join(page_dir, "index.html"), "w", encoding="utf-8") as f:
             f.write(extension_page(ext, page_dir))
         print("%-28s %-8s %8s" % (ext.id, ext.version, _size(ext.zip_size)))
