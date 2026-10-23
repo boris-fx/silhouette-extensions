@@ -1,0 +1,17 @@
+id          = "com.borisfx.stability"
+name        = "Stability AI"
+version     = "1.0.0"
+author      = "Boris FX"
+description = """
+Stability AI image generation.  Contributes the Stability AI node (generate,
+inpaint, outpaint, erase, search-and-replace, background removal) backed by an
+out-of-process worker, plus the API-key options reachable from this page's
+Options button.  Self-contained: node, task provider, worker and the
+mode/model config all live inside the extension.
+"""
+silhouette  = ">=2027"
+
+python_requires = []
+
+[contributes]
+nodes = ["PyStabilityAI"]

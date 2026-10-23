@@ -1,0 +1,89 @@
+{
+	"modes" :
+	[
+		{
+			"label" : "Generate",
+			"mode" : "generate",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/generate/sd3",
+			"params" : ["prompt", "negprompt", "image", "genstr"]
+		},
+		{
+			"label" : "Inpaint",
+			"mode" : "inpaint",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/edit/inpaint",
+			"params" : ["prompt", "negprompt", "image", "mask", "paintstr", "composite"]
+		},
+		{
+			"label" : "Outpaint",
+			"mode" : "outpaint",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/edit/inpaint",
+			"params" : ["prompt", "negprompt", "image", "mask", "paintstr", "composite"]
+		},
+		{
+			"label" : "Erase",
+			"mode" : "erase",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/edit/erase",
+			"params" : ["image", "mask"]
+		},
+		{
+			"label" : "Search and Replace",
+			"mode" : "replace",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/edit/search-and-replace",
+			"params" : ["prompt", "negprompt", "selprompt", "image"]
+		},
+		{
+			"label" : "Search and Recolor",
+			"mode" : "recolor",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/edit/search-and-recolor",
+			"params" : ["prompt", "negprompt", "selprompt", "image"]
+		},
+		{
+			"label" : "Remove background",
+			"mode" : "background",
+			"default" : "sd3.5-large",
+			"url" : "v2beta/stable-image/edit/remove-background",
+			"params" : ["image"]
+		}
+	],
+	
+	"models" :
+	[
+		{
+			"label" : "Stable Diffusion XL v1",
+			"engine" : "stable-diffusion-xl-1024-v1-0",
+			"generate" : {
+						"text-to-image" : "v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image",
+						"image-to-image" : "v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image"
+					},
+			"inpaint" : "v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image/masking",
+			"outpaint" : "v1/generation/stable-diffusion-xl-1024-v1-0/image-to-image/masking"
+		},
+		{
+			"label" : "Stable Diffusion v3.5 Large",
+			"engine" : "sd3.5-large",
+			"custom" : 	{
+							"model" : "sd3.5-large"
+						}
+		},
+		{
+			"label" : "Stable Diffusion v3.5 Large Turbo",
+			"engine" : "sd3.5-large-turbo",
+			"custom" : 	{
+							"model" : "sd3.5-large-turbo"
+						}
+		},
+		{
+			"label" : "Stable Diffusion v3.5 Medium",
+			"engine" : "sd3.5-medium",
+			"custom" : 	{
+							"model" : "sd3.5-medium"
+						}
+		}
+	]
+}
