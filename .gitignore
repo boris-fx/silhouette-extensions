@@ -13,3 +13,6 @@ dist/
 __pycache__/
 *.py[cod]
 .DS_Store
+
+# Website build output (scripts/build_site.py)
+_site/

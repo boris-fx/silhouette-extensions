@@ -27,12 +27,15 @@ the way it is. Start there.
 
 ## Installing
 
-Either:
+The easiest way is the website, **[boris-fx.github.io/silhouette-extensions](https://boris-fx.github.io/silhouette-extensions/)**:
+each extension has a one-click download.  Drag the zip (or the folder it unzips
+to) onto Silhouette's window.  Or, from this repo:
 
-- **From an archive** — grab a `.sfxext` from the
-  [Releases](https://github.com/boris-fx/silhouette-extensions/releases) page,
-  then *Preferences → Extensions → Install…*, or just drag it onto Silhouette's
-  window.
+- **Drop a folder** — download this repo (*Code → Download ZIP*) and unzip
+  it, then drag the extension's folder from `extensions/` onto Silhouette's
+  window, or use *Preferences → Extensions → Install → From Folder…*.
+  Silhouette copies it into your extensions folder, so you can delete the
+  download afterwards.
 - **From a checkout** — clone this repo and point Silhouette at the
   `extensions/` folder, either with the `SFX_EXTENSION_PATHS` environment
   variable or the `extensions.paths` preference, then relaunch. This is the one
@@ -51,17 +54,15 @@ is installed, and its **Download Model** button fetches the weights as a
 background task you can watch, pause, resume, and cancel in the Tasks view. See
 that extension's README for the manual-install path too, for offline machines.
 
-## Packaging
+## Sharing an extension as one file
 
-`scripts/package.py` builds installable archives:
+Silhouette also installs a `.zip` or `.sfxext` archive of an extension folder.
+`scripts/package.py` builds one, leaving out model weights and build noise:
 
 ```sh
-./scripts/package.py --all                              # every extension -> dist/
-./scripts/package.py extensions/com.borisfx.testmenu    # just one
+./scripts/package.py extensions/com.borisfx.testmenu    # -> dist/com.borisfx.testmenu-1.0.0.sfxext
+./scripts/package.py --all                              # every extension
 ```
-
-Each archive nests under a single folder named for the extension id, which is
-the layout Silhouette's installer expects. Weights and build noise are excluded.
 
 ## Writing your own
 

@@ -1,19 +1,19 @@
-name: Package extensions
+name: Validate extensions
 
-# Builds a .sfxext for every extension.  On a tag push the archives are attached
-# to the GitHub release, so users can install one without cloning the repo.
+# Checks every extension's manifest and compiles its Python.  Nothing is
+# packaged: Silhouette installs an extension folder directly, by drag-and-drop
+# or Preferences > Extensions > Install > From Folder.
 on:
   push:
-    branches: [main]      # validate every change that lands
-    tags: ["v*"]          # ...and attach archives to a tagged release
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
 permissions:
-  contents: write        # needed only by the release step below
+  contents: read
 
 jobs:
-  package:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,17 +44,3 @@ jobs:
 
       - name: Compile-check every extension
         run: python -m compileall -q extensions
-
-      - name: Build archives
-        run: ./scripts/package.py --all
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sfxext
-          path: dist/*.sfxext
-
-      - name: Attach to release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*.sfxext

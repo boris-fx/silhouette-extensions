@@ -21,11 +21,10 @@ task provider, and an fx-free worker process, in about 1,100 lines.
 
 ## Installing
 
-Install it like any extension from this repo: drop the
-`com.borisfx.stability.sfxext` archive from the
-[Releases](https://github.com/boris-fx/silhouette-extensions/releases) page
-onto Silhouette (or *Preferences → Extensions → Install…*), or point
-Silhouette at a checkout's `extensions/` folder.
+Install it like any extension from this repo: drag the
+`com.borisfx.stability` folder onto Silhouette's window (or use
+*Preferences → Extensions → Install → From Folder…*), or point Silhouette at
+a checkout's `extensions/` folder.
 
 Then enter your key: *Preferences → Extensions*, select **Stability AI**, and
 click **Options**. If you skip this, the node's **Generate** button offers to
