@@ -29,7 +29,8 @@ the way it is. Start there.
 
 The easiest way is the website, **[boris-fx.github.io/silhouette-extensions](https://boris-fx.github.io/silhouette-extensions/)**:
 each extension has a one-click download.  Drag the zip (or the folder it unzips
-to) onto Silhouette's window.  Or, from this repo:
+to) onto Silhouette's window, or skip the download and drag the site's
+**Download** button straight onto Silhouette.  Or, from this repo:
 
 - **Drop a folder** — download this repo (*Code → Download ZIP*) and unzip
   it, then drag the extension's folder from `extensions/` onto Silhouette's

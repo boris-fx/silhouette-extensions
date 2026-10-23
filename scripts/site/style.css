@@ -38,7 +38,9 @@ a:hover { text-decoration: underline; }
 /* header / footer */
 header.site { border-bottom: 1px solid var(--line); background: var(--surface); }
 header.site .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 16px; }
-.brand { font-weight: 650; color: var(--text); letter-spacing: -.01em; }
+.brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 650; color: var(--text); letter-spacing: -.01em; }
+.brand:hover { text-decoration: none; }
+.brand img { width: 28px; height: 28px; border-radius: 5px; flex: none; }
 header.site nav { display: flex; gap: 20px; font-size: 15px; }
 header.site nav a { color: var(--muted); }
 
@@ -59,6 +61,11 @@ footer.site { margin-top: 64px; padding: 24px 0 40px; border-top: 1px solid var(
 .install h2 { font-size: 17px; margin: 0 0 8px; }
 .steps { margin: 0; padding-left: 22px; }
 .steps li { margin: 4px 0; }
+.shortcut { margin: 10px 0 0; }
+.kbd-button {
+  background: var(--orange); color: var(--on-orange);
+  font-weight: 600; font-size: 13px; padding: 1px 7px; border-radius: 5px;
+}
 
 .grid {
   display: grid;
@@ -89,6 +96,17 @@ footer.site { margin-top: 64px; padding: 24px 0 40px; border-top: 1px solid var(
 }
 .icon.large.tile { font-size: 32px; }
 .card .meta { margin-bottom: 0; }
+
+/* what an extension adds: icon + label chips (scripts/site/kinds/*.svg) */
+.kinds { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 12px; }
+.kind {
+  --chip-bg: var(--bg);
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--chip-bg); border: 1px solid var(--line); border-radius: 999px;
+  padding: 2px 10px 2px 6px; font-size: 12.5px; color: var(--muted); white-space: nowrap;
+}
+.kind-icon { width: 16px; height: 16px; flex: none; color: var(--link); }
+.ext-header .kinds { margin: 14px 0 0; }
 .card .title { margin-bottom: 12px; }
 .card h2 { font-size: 19px; margin: 0; letter-spacing: -.01em; }
 .card h2 a { color: var(--text); }

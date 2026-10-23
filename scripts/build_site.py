@@ -20,6 +20,10 @@ on its card and page, the same icon Silhouette shows on its Extensions page;
 without one, the card shows the name's first letter on a plain tile.  An
 optional `screenshot.png` (or .jpg) is shown on the card and page too.
 
+What an extension adds (its manifest's [contributes] table) shows as a row of
+chips, each an icon from scripts/site/kinds/ plus a label such as "2 themes".
+Cards carry the same list in a data-kinds attribute, ready for filtering.
+
 Nothing this writes is committed: the Pages workflow runs it on every push to
 main and publishes the result.  Needs Python 3.11+ and the `markdown` package.
 """
@@ -52,13 +56,18 @@ IMAGE_EXT = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp"}
 SCREENSHOTS = ("screenshot.png", "screenshot.jpg")
 ICON = "icon.png"
 
-# what each [contributes] key is called on a card
-CONTRIBUTES = {
+# Each [contributes] key the site knows: (singular, plural).  The order here is
+# the order chips appear in.  Its icon is scripts/site/kinds/<key>.svg; a key
+# not listed here is shown with kinds/other.svg and its own name.
+KINDS = {
     "nodes": ("node", "nodes"),
-    "themes": ("theme", "themes"),
     "actions": ("menu command", "menu commands"),
     "panels": ("panel", "panels"),
+    "controls": ("control page", "control pages"),
+    "themes": ("theme", "themes"),
+    "hooks": ("hook", "hooks"),
 }
+KIND_ICONS = os.path.join(HERE, "site", "kinds")
 
 
 # ---------------------------------------------------------------------------
@@ -92,12 +101,17 @@ class Extension:
         first = self.description[0] if self.description else ""
         return html.escape(re.split(r"(?<=[.!?])\s", first, maxsplit=1)[0])
 
-    def contributes_text(self):
-        parts = []
-        for key, items in self.contributes.items():
-            one, many = CONTRIBUTES.get(key, (key.rstrip("s"), key))
-            parts.append("%d %s" % (len(items), one if len(items) == 1 else many))
-        return ", ".join(parts)
+    def kinds(self):
+        """-> [(key, label)] for what it contributes, in KINDS order."""
+        order = list(KINDS)
+        keys = sorted((k for k, items in self.contributes.items() if items),
+                      key=lambda k: (order.index(k) if k in KINDS else len(order), k))
+        out = []
+        for key in keys:
+            n = len(self.contributes[key])
+            one, many = KINDS.get(key, (key.rstrip("s"), key))
+            out.append((key, "%d %s" % (n, one if n == 1 else many)))
+        return out
 
 
 def _paragraphs(text):
@@ -207,13 +221,14 @@ def page(title, body, root, description=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
 <meta name="description" content="{description}">
-<link rel="icon" href="{root}favicon.svg" type="image/svg+xml">
+<link rel="icon" href="{root}favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="{root}silhouette-logo.png">
 <link rel="stylesheet" href="{root}style.css">
 </head>
 <body>
 <header class="site">
   <div class="wrap">
-    <a class="brand" href="{root}">Silhouette Extensions</a>
+    <a class="brand" href="{root}"><img src="{root}silhouette-logo.png" alt="" width="28" height="28">Silhouette Extensions</a>
     <nav><a href="{repo}/discussions">Discussions</a><a href="{repo}/blob/{branch}/CONTRIBUTING.md">Contribute</a><a href="{repo}">GitHub</a></nav>
   </div>
 </header>
@@ -236,9 +251,28 @@ def meta_line(ext):
     bits = ["v" + html.escape(ext.version)]
     if ext.requires:
         bits.append("Silhouette %s+" % html.escape(ext.requires))
-    if ext.contributes_text():
-        bits.append(html.escape(ext.contributes_text()))
     return " · ".join(bits)
+
+
+_kind_svg_cache = {}
+
+def kind_svg(key):
+    """The icon for a [contributes] key, inline so it takes the text colour."""
+    if key not in _kind_svg_cache:
+        path = os.path.join(KIND_ICONS, key + ".svg")
+        if key not in KINDS or not os.path.isfile(path):
+            path = os.path.join(KIND_ICONS, "other.svg")
+        svg = open(path, encoding="utf-8").read()
+        svg = re.sub(r"<!--.*?-->\s*", "", svg, flags=re.S).strip()
+        _kind_svg_cache[key] = svg.replace("<svg ", '<svg class="kind-icon" aria-hidden="true" ', 1)
+    return _kind_svg_cache[key]
+
+
+def kinds_html(ext):
+    items = ['<li class="kind" data-kind="{key}">{svg}<span>{label}</span></li>'.format(
+                 key=html.escape(key), svg=kind_svg(key), label=html.escape(label))
+             for key, label in ext.kinds()]
+    return '<ul class="kinds">%s</ul>' % "".join(items) if items else ""
 
 
 def icon_html(ext, prefix, cls):
@@ -250,7 +284,10 @@ def icon_html(ext, prefix, cls):
 
 
 def download_button(ext, root):
-    return ('<a class="button" href="{root}downloads/{id}.zip" download>'
+    # A plain link, so it can also be dragged: Silhouette downloads and installs
+    # an https .zip link dropped on its window.
+    return ('<a class="button" href="{root}downloads/{id}.zip" download draggable="true" '
+            'title="Click to download, or drag onto Silhouette\'s window to install">'
             'Download <span class="size">{size} zip</span></a>').format(
                 root=root, id=html.escape(ext.id), size=_size(ext.zip_size))
 
@@ -261,7 +298,10 @@ INSTALL_STEPS = """<ol class="steps">
       unzips to.  Or use <em>Preferences → Extensions → Install</em>.</li>
   <li><strong>Confirm</strong>, and it's ready.  Disable or remove it any time on the
       same Preferences page.</li>
-</ol>"""
+</ol>
+<p class="shortcut"><strong>Shortcut:</strong> skip the download and drag the
+<span class="kbd-button">Download</span> button straight from this page onto
+Silhouette's window.</p>"""
 
 
 def index_page(exts):
@@ -270,7 +310,7 @@ def index_page(exts):
         shot = ('<img class="shot" src="{id}/{s}" alt="" loading="lazy">'
                 .format(id=html.escape(ext.id), s=ext.screenshot) if ext.screenshot else "")
         adds = '<p class="adds">%s</p>' % ext.adds if ext.adds else ""
-        cards.append("""<article class="card">
+        cards.append("""<article class="card" data-kinds="{kinds}">
   {shot}
   <div class="title">
     {icon}
@@ -279,10 +319,12 @@ def index_page(exts):
       <p class="meta">{meta}</p>
     </div>
   </div>
+  {chips}
   {adds}
   <p class="summary">{summary}</p>
   <div class="actions">{download}<a class="more" href="{id}/">Details</a></div>
 </article>""".format(shot=shot, icon=icon_html(ext, html.escape(ext.id) + "/", "icon"),
+                     kinds=html.escape(" ".join(k for k, _ in ext.kinds())), chips=kinds_html(ext),
                      id=html.escape(ext.id), name=html.escape(ext.name),
                      meta=meta_line(ext), adds=adds, summary=ext.summary,
                      download=download_button(ext, "")))
@@ -329,6 +371,7 @@ def extension_page(ext, page_dir):
       <p class="meta"><code>{id}</code> · {meta}</p>
     </div>
   </div>
+  {chips}
   <p class="lede">{summary}</p>
   <div class="actions">{download}<a class="more" href="{repo}/tree/{branch}/extensions/{id}">Source on GitHub</a></div>
 </section>
@@ -340,7 +383,7 @@ def extension_page(ext, page_dir):
 <article class="readme">
 {readme}
 </article>""".format(name=html.escape(ext.name), id=html.escape(ext.id), meta=meta_line(ext),
-                     icon=icon_html(ext, "", "icon large"),
+                     icon=icon_html(ext, "", "icon large"), chips=kinds_html(ext),
                      summary=ext.summary, download=download_button(ext, "../"), shot=shot,
                      steps=INSTALL_STEPS, readme=render_readme(ext, page_dir),
                      repo=REPO_URL, branch=BRANCH)
@@ -355,7 +398,8 @@ def build(out):
         shutil.rmtree(out)
     os.makedirs(out)
     for name in os.listdir(ASSETS):
-        shutil.copy2(os.path.join(ASSETS, name), out)
+        if os.path.isfile(os.path.join(ASSETS, name)):    # kinds/ is inlined, not served
+            shutil.copy2(os.path.join(ASSETS, name), out)
 
     exts = load_extensions()
     for ext in exts:
