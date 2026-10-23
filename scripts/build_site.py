@@ -209,7 +209,7 @@ def page(title, body, root, description=""):
 <header class="site">
   <div class="wrap">
     <a class="brand" href="{root}">Silhouette Extensions</a>
-    <nav><a href="{repo}">GitHub</a><a href="{repo}/blob/{branch}/CONTRIBUTING.md">Contribute</a></nav>
+    <nav><a href="{repo}/discussions">Discussions</a><a href="{repo}/blob/{branch}/CONTRIBUTING.md">Contribute</a><a href="{repo}">GitHub</a></nav>
   </div>
 </header>
 <main class="wrap">
@@ -287,6 +287,13 @@ def index_page(exts):
   read the <em>Extensions</em> chapter of Silhouette's scripting documentation
   (<em>Help → Scripting</em>).  To share yours here, see
   <a href="{repo}/blob/{branch}/CONTRIBUTING.md">Contributing</a>.</p>
+</section>
+<section class="write-your-own">
+  <h2>Questions and ideas</h2>
+  <p>Ask how to install, use, or write an extension, suggest one you'd like to
+  see, or show off what you've built, in
+  <a href="{repo}/discussions">Discussions</a>.  Found a bug in one of these?
+  <a href="{repo}/issues/new/choose">Open an issue</a>.</p>
 </section>""".format(steps=INSTALL_STEPS, cards="\n".join(cards), repo=REPO_URL, branch=BRANCH)
     return page("Silhouette Extensions", body, "",
                 "Free extensions for Silhouette: nodes, themes, panels, and menu commands.")

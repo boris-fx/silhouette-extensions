@@ -1,0 +1,30 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask anything about using or writing Silhouette extensions.  If you've
+        found a bug in one of the extensions here, please
+        [open an issue](https://github.com/boris-fx/silhouette-extensions/issues/new) instead.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What are you trying to do, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: extension
+    attributes:
+      label: Extension
+      description: Which extension it's about, if any (e.g. com.borisfx.nafnet).
+  - type: input
+    id: version
+    attributes:
+      label: Silhouette version and platform
+      placeholder: e.g. 2027.0 on macOS 26
+  - type: textarea
+    id: log
+    attributes:
+      label: Console output or code
+      description: Anything relevant from the Python console, or the code you're running.
+      render: text

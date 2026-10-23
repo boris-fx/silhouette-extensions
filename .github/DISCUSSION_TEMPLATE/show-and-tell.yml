@@ -1,0 +1,29 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share an extension you've built, or something you made with one.
+        Want it listed in this repository?  See
+        [Contributing](https://github.com/boris-fx/silhouette-extensions/blob/main/CONTRIBUTING.md).
+  - type: textarea
+    id: what
+    attributes:
+      label: What is it?
+      description: What it does, and a screenshot or short video if you have one.
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Where to get it
+      description: A link to the code or download, if it's available.
+  - type: input
+    id: license
+    attributes:
+      label: License
+      placeholder: e.g. MIT, BSD-3-Clause, or "not shared yet"
+  - type: input
+    id: version
+    attributes:
+      label: Silhouette version it works with
+      placeholder: e.g. 2026.5 and newer

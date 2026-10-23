@@ -64,6 +64,17 @@ Silhouette also installs a `.zip` or `.sfxext` archive of an extension folder.
 ./scripts/package.py --all                              # every extension
 ```
 
+## Questions, ideas, and bugs
+
+- **Questions** about installing, using, or writing extensions →
+  [Discussions: Q&A](https://github.com/boris-fx/silhouette-extensions/discussions/categories/q-a)
+- **An extension you'd like to see** →
+  [Discussions: Ideas](https://github.com/boris-fx/silhouette-extensions/discussions/categories/ideas)
+- **Something you built** →
+  [Discussions: Show and tell](https://github.com/boris-fx/silhouette-extensions/discussions/categories/show-and-tell)
+- **A bug in one of these extensions**, or proposing a new one for this repo →
+  [Issues](https://github.com/boris-fx/silhouette-extensions/issues/new/choose)
+
 ## Writing your own
 
 The fastest start is to copy the extension closest to what you want and rename

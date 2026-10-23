@@ -1,0 +1,23 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggest an extension you'd like to see, or an improvement to one
+        that's here.  Upvote the ideas you want most.
+  - type: textarea
+    id: idea
+    attributes:
+      label: What should it do?
+      description: Describe the task it helps with in Silhouette, and how you'd use it.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do this today?
+      description: Your current workaround, or why it isn't possible yet.
+  - type: input
+    id: extension
+    attributes:
+      label: Existing extension
+      description: If this improves one that's here, which one (e.g. com.borisfx.stability).

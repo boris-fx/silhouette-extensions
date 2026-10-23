@@ -1,0 +1,13 @@
+# Issues are for bugs in these extensions and for proposing a new one (see
+# CONTRIBUTING.md).  Questions and requests go to Discussions.
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question
+    url: https://github.com/boris-fx/silhouette-extensions/discussions/new?category=q-a
+    about: How to install, use, or write an extension.
+  - name: Suggest an extension
+    url: https://github.com/boris-fx/silhouette-extensions/discussions/new?category=ideas
+    about: An extension you'd like someone to build, or an idea for one that's here.
+  - name: Silhouette support
+    url: https://support.borisfx.com/hc/en-us
+    about: Problems with Silhouette itself, licensing, or installation.

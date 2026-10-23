@@ -5,6 +5,11 @@ extensions from Boris FX and extensions contributed by the Silhouette
 community.  Each lives in its own folder under `extensions/`, which users
 install by dragging it onto Silhouette.
 
+Just want to show something you built, or float an idea first?  Post it in
+[Discussions](https://github.com/boris-fx/silhouette-extensions/discussions):
+*Show and tell* or *Ideas*.  The steps below are for getting an extension
+into this repository.
+
 ## 1. Open an issue first
 
 Before you write a pull request, [open an issue](https://github.com/boris-fx/silhouette-extensions/issues/new)
