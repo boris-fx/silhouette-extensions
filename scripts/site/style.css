@@ -1,33 +1,22 @@
-/* Silhouette Extensions site.  Built by scripts/build_site.py. */
+/* Silhouette Extensions site.  Built by scripts/build_site.py.
+
+   Colours are Silhouette's Classic theme (resources/themes/classic.json in the
+   app), so the site looks like the application it extends.  Dark only, like
+   Silhouette itself. */
 
 :root {
-  --bg: #f6f7f8;
-  --surface: #ffffff;
-  --text: #1c2126;
-  --muted: #5d6873;
-  --line: #dde2e7;
-  --accent: #0f7a73;
-  --accent-ink: #ffffff;
-  --accent-soft: #e3f2f0;
-  --code-bg: #eef1f4;
-  --shadow: 0 1px 2px rgba(16, 24, 32, .06), 0 4px 16px rgba(16, 24, 32, .05);
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #12171b;
-    --surface: #1a2026;
-    --text: #e3e8ec;
-    --muted: #97a3ad;
-    --line: #2b343c;
-    --accent: #3cc2b5;
-    --accent-ink: #062a27;
-    --accent-soft: #173533;
-    --code-bg: #222a31;
-    --shadow: none;
-    color-scheme: dark;
-  }
+  --bg: #292929;           /* ViewBackground */
+  --surface: #474747;      /* WindowBackground: cards, header, README panel */
+  --line: #181818;         /* EdgeShadow */
+  --highlight: #646464;    /* SelectionFill: the install panel */
+  --text: #ffffff;         /* TextPrimary */
+  --muted: #c8c8c8;        /* secondary text; readable on WindowBackground */
+  --link: #86bde1;         /* ActiveIcon: AccentPrimary's soft blue, brightened */
+  --orange: #ff8000;       /* AccentAttention, the VFX orange: download buttons */
+  --on-orange: #181818;    /* white on orange is too faint to read */
+  --code-bg: #292929;
+  --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 2px 8px rgba(0, 0, 0, .35);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -41,7 +30,7 @@ body {
   font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-a { color: var(--accent); text-decoration: none; }
+a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
@@ -63,7 +52,8 @@ footer.site { margin-top: 64px; padding: 24px 0 40px; border-top: 1px solid var(
 .install {
   margin: 32px 0;
   padding: 20px 24px;
-  background: var(--accent-soft);
+  background: var(--highlight);
+  border: 1px solid var(--line);
   border-radius: 12px;
 }
 .install h2 { font-size: 17px; margin: 0 0 8px; }
@@ -100,14 +90,14 @@ footer.site { margin-top: 64px; padding: 24px 0 40px; border-top: 1px solid var(
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--orange);
+  color: var(--on-orange);
   font-weight: 600;
   padding: 9px 16px;
   border-radius: 8px;
 }
 .button:hover { text-decoration: none; filter: brightness(1.08); }
-.button .size { font-weight: 400; font-size: 13px; opacity: .85; }
+.button .size { font-weight: 500; font-size: 13px; opacity: .8; }
 .more { font-weight: 500; }
 
 .write-your-own { margin-top: 48px; max-width: 720px; }
