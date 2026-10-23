@@ -331,7 +331,7 @@ def index_page(exts):
 
     body = """<section class="hero">
   <h1>Add to Silhouette</h1>
-  <p class="lede">Nodes, themes, panels, and menu commands for Silhouette, written
+  <p class="lede">Nodes, themes, panels, menu commands, and more for Silhouette, written
   in Python and free to use, copy, and take apart.  Each one is a working
   example of the extension API, so it's also the quickest way to learn it.</p>
 </section>
