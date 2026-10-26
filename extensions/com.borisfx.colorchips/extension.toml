@@ -1,0 +1,14 @@
+id          = "com.borisfx.colorchips"
+name        = "Color Chips"
+version     = "0.1.0"
+author      = "Boris FX"
+description = """
+Sample colours off the image and label them with swatch cards: up to four
+draggable (or tracked) points, each showing the nearest XKCD colour-survey name
+and its sRGB value.  In the spirit of Lewis Saunders' Ls_Chips Flame Matchbox.
+"""
+silhouette      = ">=2027"
+python_requires = ["numpy"]
+
+[contributes]
+nodes = ["ColorChips"]

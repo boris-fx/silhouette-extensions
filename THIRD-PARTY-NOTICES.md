@@ -56,3 +56,13 @@ CONDITIONS OF ANY KIND, either express or implied.
 
 The `genai` extension imports the `genai.task_engine` and `genai.expose`
 modules that ship with Silhouette. They are not vendored here.
+
+---
+
+## XKCD colour survey — `extensions/com.borisfx.colorchips/data/xkcd_rgb.txt`
+
+The 949 colour names and sRGB values from Randall Munroe's
+[XKCD colour survey](https://xkcd.com/color/rgb/), unmodified.  They are
+dedicated to the public domain under
+[CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), so no notice is
+required; this entry records where the data came from.
