@@ -18,6 +18,7 @@ Roughly in order of how much there is to learn:
 | [`com.borisfx.deepwater`](extensions/com.borisfx.deepwater) | Two blue-green UI themes | Themes from an extension — **no Python at all**; one theme inheriting another's palette |
 | [`com.borisfx.testmenu`](extensions/com.borisfx.testmenu) | Three actions | `fx.Action`: a new top-level menu, a view context menu, availability and undo |
 | [`com.borisfx.samplepanel`](extensions/com.borisfx.samplepanel) | A dockable panel | `fx.registerPanel` with PySide6; lazy widget creation, layout persistence, clean teardown |
+| [`com.borisfx.slate`](extensions/com.borisfx.slate) | *Slate* node | Text layout with `Font.layout()` (alignment, multi-line columns), drawing a whole frame with `fx.draw`, an optional aux input, and fields that fill themselves in from the project |
 | [`com.borisfx.colorchips`](extensions/com.borisfx.colorchips) | *Color Chips* node | Drawing with `fx.draw` (shapes, text, a soft shadow) over the image, viewer points that can follow a tracker, and colour maths with numpy |
 | [`com.borisfx.nafnet`](extensions/com.borisfx.nafnet) | *NAFNet Restore* node | A real PyTorch node: on-demand dependencies, a vendored model, and **model weights fetched by a resumable background task** |
 | [`com.borisfx.stability`](extensions/com.borisfx.stability) | *Stability AI* node | A real cloud service: image generation as a background task, results in an asset catalog, an API key kept as an extension option. Needs your own Stability API key |

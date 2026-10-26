@@ -1,0 +1,15 @@
+id          = "com.borisfx.slate"
+name        = "Slate"
+version     = "0.1.0"
+author      = "Boris FX"
+description = """
+A VFX submission slate node, following Netflix's published layouts for VFX
+submissions.  PIP mode builds a slate card (the shot details, the clip as a
+picture-in-picture thumbnail, colour bars and a vendor-logo box); Overlay mode
+burns the same details into the corners of the full-frame clip.  Left blank,
+the fields fill themselves in from the project and session.
+"""
+silhouette  = ">=2027"
+
+[contributes]
+nodes = ["Slate"]
