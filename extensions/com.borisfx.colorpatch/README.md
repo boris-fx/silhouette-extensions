@@ -5,7 +5,7 @@ markers, blemishes, signs and small objects. Two modes:
 
 - **Corners** — four points; each averages the block of pixels under it, and the quad
   between them is filled with a smooth bilinear blend of the four samples.
-- **Shapes** — a shape picked from the **Transform** input becomes an N-gon patch, filled
+- **Shape** — a shape picked from the **Transform** input becomes an N-gon patch, filled
   on the GPU with the mean value interpolation of colours sampled round its edge.
 
 ## Wiring
@@ -13,13 +13,13 @@ markers, blemishes, signs and small objects. Two modes:
 ```
   Source ──► Color Patch ──► Output
   Roto / Tracker ──(objects)──► Color Patch (Transform)     Corners: optional tracking
-                                                             Shapes: the shape to fill
+                                                             Shape: the shape to fill
   Matte ──► Color Patch (Obey Matte)                         optional
 ```
 
 ## Properties
 
-**Mode** — Corners or Shapes.
+**Mode** — Corners or Shape.
 
 **Corners** — `Transform` (below), then `Top Left`, `Top Right`, `Bottom Right`,
 `Bottom Left`: four viewer points, a box in the middle of the frame by default. The quad may be any shape
@@ -31,7 +31,7 @@ pixels). The gradient still runs exactly between the corners, but a corner place
 an edge can take its colour from just off it, so the edge's own colour isn't smeared
 into the patch. Drag them with the **Edit** tool (below).
 
-**Shapes** (Shapes mode):
+**Shape** (Shape mode):
 - **Shape** — the shape to fill, picked from the shapes on the Transform input (those
   inside layers too, listed as `Layer/Shape`). With none picked the input passes
   through untouched. Only closed shapes with at least three points fill; the pick's
@@ -55,7 +55,7 @@ uses that many of the control points, spread evenly round the shape.
   keeps the shape and replaces the rest of the frame, from samples just inside its edge.
 
 **Sample Size** — the width in pixels of the square block each sample averages. A
-block off the frame samples the nearest block inside it. In Shapes mode each block
+block off the frame samples the nearest block inside it. In Shape mode each block
 sits just far enough off the sampling line (the edge moved by Sample Offset), on the
 side being kept, that none of its pixels cross a straight stretch of it: half its width for an edge running along the pixel grid, and up
 to about 0.71 of its width for a diagonal one. Each block also averages only the pixels
@@ -99,10 +99,10 @@ either
 
 Both can be used together: the node-level Transform applies after a corner's own link.
 
-Shapes: the picked shape follows its own layers' transforms (tracked layers included),
+Shape: the picked shape follows its own layers' transforms (tracked layers included),
 as Roto draws it. Disconnecting the Transform input clears both picks.
 
-## How Shapes mode fills
+## How Shape mode fills
 
 Each shape is flattened to a polyline, and the sample centres form a polygon whose
 vertices carry the sampled colours. Every pixel gets the blend given by **mean value
@@ -117,7 +117,7 @@ interpolation is one WGSL compute
 dispatch per patch (`fx.WGPUShader`), with the samples passed in a table texture;
 sampling, coverage and compositing stay in numpy.
 
-Shapes mode needs the GPU: with no GPU device (or the GPU preference off) it reports
+Shape mode needs the GPU: with no GPU device (or the GPU preference off) it reports
 why and passes the input through.
 
 ## Notes

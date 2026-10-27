@@ -6,7 +6,7 @@ with the bilinear blend of those four samples, so a marker, blemish or small
 object is replaced by a smooth gradient of its surroundings.  A Transform
 picked from the Transform input moves all four corners together.
 
-Shapes mode: the shape picked from the Transform input becomes an N-gon patch
+Shape mode: the shape picked from the Transform input becomes an N-gon patch
 (with none picked, the input passes through).  Colours are sampled just outside its edge -- densely along it, or only
 at its control points -- and the shape is filled with their mean value
 interpolation (Hormann & Floater's mean value coordinates, the trick behind
@@ -49,7 +49,7 @@ DEFAULT_POS = [(-BOX, -BOX), (BOX, -BOX), (BOX, BOX), (-BOX, BOX)]
 LUMA = (0.2126, 0.7152, 0.0722)
 
 # the Mode, Sample and Fill popups
-MODE_CORNERS, MODE_SHAPES = 0, 1
+MODE_CORNERS, MODE_SHAPE = 0, 1
 SAMPLE_EDGE, SAMPLE_POINTS = 0, 1
 FILL_INSIDE, FILL_OUTSIDE = 0, 1
 
@@ -355,7 +355,7 @@ class ColorPatchNode(NodeProxy):
 
 	Corners: each corner averages the Sample Size block of pixels centred on it (a
 	corner off the frame samples the nearest block inside it) and the quad gets
-	their bilinear blend; an optional Transform pick moves all four.  Shapes: the
+	their bilinear blend; an optional Transform pick moves all four.  Shape: the
 	picked shape is filled with the mean value interpolation of blocks sampled
 	just outside its edge, on the GPU.
 	The Obey Matte limits where the patch is applied.
@@ -372,10 +372,12 @@ class ColorPatchNode(NodeProxy):
 		self.transform = self.addInput("transformInput", "Transform", dataTypes=["objects", "transform"])
 		self.output = self.addOutput("output", "Output", cache=True)
 
+		# the second item's ID stays "Shapes" (the mode's first name): projects store
+		# the ID, so renaming it would load saved nodes back in Corners mode
 		self.addProperty("mode", {"label": "Mode", "value": MODE_CORNERS, "items": ["Corners", "Shapes"],
-								  "supervise": True,
+								  "labels": ["Corners", "Shape"], "supervise": True,
 								  "tooltip": "Corners: fill the quad between the four corner points.\n"
-											 "Shapes: fill the shape picked from the Transform input."})
+											 "Shape: fill the shape picked from the Transform input."})
 
 		self.addProperty("corners", {"label": "Corners", "type": "group", "expand": True})
 		# a tracker or layer that moves all four corners (and their sample offsets)
@@ -397,7 +399,7 @@ class ColorPatchNode(NodeProxy):
 											  "group": "sampleOffsets",
 											  "tooltip": "Where this corner's colour is sampled, relative to it"})
 
-		self.addProperty("shapes", {"label": "Shapes", "type": "group", "expand": True})
+		self.addProperty("shapes", {"label": "Shape", "type": "group", "expand": True})
 		# the one shape to fill; with none picked the node passes its input through
 		self.addProperty("shape", {"label": "Shape", "type": "object", "port": "transformInput",
 								   "dataTypes": [fx.DataType.MASK], "objectTypes": ["Shape"], "group": "shapes",
@@ -447,14 +449,14 @@ class ColorPatchNode(NodeProxy):
 
 	def updatePropertyState(self):
 		self._warmup()
-		shapes = int(self.property("mode").getValue(0)) == MODE_SHAPES
-		self.property("cornerTransform").enabled = not shapes
+		shape_mode = int(self.property("mode").getValue(0)) == MODE_SHAPE
+		self.property("cornerTransform").enabled = not shape_mode
 		for key, _ in CORNERS:
-			self.property(key).enabled = not shapes
-			self.property(key + "Offset").enabled = not shapes
+			self.property(key).enabled = not shape_mode
+			self.property(key + "Offset").enabled = not shape_mode
 		for key in ("shape", "sample", "fill", "sampleOffset"):
-			self.property(key).enabled = shapes
-		self.property("spacing").enabled = shapes and int(self.property("sample").getValue(0)) == SAMPLE_EDGE
+			self.property(key).enabled = shape_mode
+		self.property("spacing").enabled = shape_mode and int(self.property("sample").getValue(0)) == SAMPLE_EDGE
 
 	# the compiled MVC shader, built on first use; None (with the reason set on rc)
 	# when there is no GPU or it failed to compile
@@ -463,7 +465,7 @@ class ColorPatchNode(NodeProxy):
 			self._shader = fx.WGPUShader(MVC_WGSL)
 		if not self._shader.valid:
 			if not fx.WGPUShader.available():
-				rc.setError("Color Patch: Shapes mode needs the GPU (%s)" % fx.WGPUShader.deviceError())
+				rc.setError("Color Patch: Shape mode needs the GPU (%s)" % fx.WGPUShader.deviceError())
 			else:
 				rc.setError("Color Patch: " + self._shader.error)
 			return None
@@ -570,7 +572,7 @@ class ColorPatchNode(NodeProxy):
 		size = rc.proxy.renderSize
 		frame = Recti(size=size)
 		dod = info.get("dod")
-		if int(self.property("mode").getValue(options.frame)) == MODE_SHAPES:
+		if int(self.property("mode").getValue(options.frame)) == MODE_SHAPE:
 			# Outside can patch anywhere in the frame; Inside only the picked shape's
 			# matte; nothing picked, nothing patched
 			picked = self._pickedShape(options.frame)
@@ -608,8 +610,8 @@ class ColorPatchNode(NodeProxy):
 			return None					# nothing to sample
 
 		frame = options.frame
-		if int(self.property("mode").getValue(frame)) == MODE_SHAPES:
-			return self._processShapes(np, rc, options, type, image)
+		if int(self.property("mode").getValue(frame)) == MODE_SHAPE:
+			return self._processShape(np, rc, options, type, image)
 
 		size  = rc.proxy.renderSize
 		W, H  = size.width, size.height
@@ -657,12 +659,12 @@ class ColorPatchNode(NodeProxy):
 		_mix(np, d, patch, k[..., None])
 		return out
 
-	# SHAPES mode: the picked shape gets the mean value interpolation of colours
+	# SHAPE mode: the picked shape gets the mean value interpolation of colours
 	# sampled just off its edge -- just outside it for Inside, which replaces the
 	# shape, or just inside it for Outside, which replaces the rest of the frame --
 	# composited through its softened coverage and the Obey Matte.  With no shape
 	# picked (or one that isn't a closed outline) the input passes through.
-	def _processShapes(self, np, rc, options, type, image):
+	def _processShape(self, np, rc, options, type, image):
 		roi   = options.roi
 		frame = options.frame
 		out   = self._copy(np, rc, image, roi)

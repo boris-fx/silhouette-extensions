@@ -1,11 +1,11 @@
 id          = "com.borisfx.colorpatch"
 name        = "Color Patch"
-version     = "0.1.0"
+version     = "0.1.1"
 author      = "Boris FX"
 description = """
 Paint out markers, blemishes and small objects with colour from around them.
 Corners mode fills a quad between four points with a smooth blend of what they
-sample; Shapes mode fills a picked roto shape on the GPU, from colours sampled
+sample; Shape mode fills a picked roto shape on the GPU, from colours sampled
 all the way round its edge, for a seamless clean-plate patch.
 """
 silhouette      = ">=2027"
