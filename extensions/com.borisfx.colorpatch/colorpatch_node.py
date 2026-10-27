@@ -372,10 +372,8 @@ class ColorPatchNode(NodeProxy):
 		self.transform = self.addInput("transformInput", "Transform", dataTypes=["objects", "transform"])
 		self.output = self.addOutput("output", "Output", cache=True)
 
-		# the second item's ID stays "Shapes" (the mode's first name): projects store
-		# the ID, so renaming it would load saved nodes back in Corners mode
-		self.addProperty("mode", {"label": "Mode", "value": MODE_CORNERS, "items": ["Corners", "Shapes"],
-								  "labels": ["Corners", "Shape"], "supervise": True,
+		self.addProperty("mode", {"label": "Mode", "value": MODE_CORNERS, "items": ["Corners", "Shape"],
+								  "supervise": True,
 								  "tooltip": "Corners: fill the quad between the four corner points.\n"
 											 "Shape: fill the shape picked from the Transform input."})
 

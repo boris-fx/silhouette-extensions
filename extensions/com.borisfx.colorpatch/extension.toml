@@ -1,6 +1,6 @@
 id          = "com.borisfx.colorpatch"
 name        = "Color Patch"
-version     = "0.1.1"
+version     = "0.1.2"
 author      = "Boris FX"
 description = """
 Paint out markers, blemishes and small objects with colour from around them.
