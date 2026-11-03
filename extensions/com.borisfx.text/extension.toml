@@ -1,0 +1,15 @@
+id          = "com.borisfx.text"
+name        = "Text"
+version     = "0.1.0"
+author      = "Boris FX"
+description = """
+Create titles, labels, credits and burn-ins over an image or transparency.
+Format fonts, sizes, styles and individual colours with the rich-text editor;
+anchor text on a viewer point or lay it out in a fixed box. Alignment, wrapping,
+line and character spacing, transforms and a soft drop shadow shape the result.
+"""
+silhouette      = ">=2027"
+python_requires = ["numpy"]
+
+[contributes]
+nodes = ["Text"]
