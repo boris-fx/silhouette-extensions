@@ -103,6 +103,17 @@ class TextNode(NodeProxy):
 		self._np = ensure("numpy")
 		from PySide6 import QtCore, QtGui
 		self._QtCore, self._QtGui = QtCore, QtGui
+		# Detect mixed-depth blending once per node, without a host-version guess.
+		fg = fx.Raster(size=fx.Size(1, 1), format=fx.Depth_8, channelMask=Channel_RGBA)
+		bg = fx.Raster(size=fx.Size(1, 1), format=Depth_Float32, channelMask=Channel_RGBA)
+		fg.clear()
+		bg.clear()
+		try:
+			bg.composite(fg, premultiplied=True)
+		except (TypeError, ValueError):
+			self._nativeComposite = False
+		else:
+			self._nativeComposite = True
 
 	def updatePropertyState(self):
 		boxMode = int(self.mode.getValue(0)) == 1
@@ -121,7 +132,7 @@ class TextNode(NodeProxy):
 
 	def process(self, rc, options, type, port):
 		roi = options.roi.clip(Recti(size=rc.proxy.renderSize))
-		if not roi.valid:
+		if not roi.valid or roi.width == 0 or roi.height == 0:
 			return None
 		frame = options.frame
 		image = None if self.textOnly.getValue(frame) else self.input.eval(rc, options.at(roi=roi), type)
@@ -130,69 +141,136 @@ class TextNode(NodeProxy):
 		out = self.allocate(rc, roi=roi, channels=Channel_RGBA, format=Depth_Float32)
 		out.clear()
 		np = self._np
-		pixels = np.asarray(out)
-		if message and opacity > 0 and not rc.canceled:
-			QtCore, QtGui = self._QtCore, self._QtGui
-
-			size = rc.proxy.sessionSize
-			boxMode = int(self.mode.getValue(frame)) == 1
-			box = (self._qrect(self.box.getValue(frame), rc.session, QtCore) if boxMode
-				   else QtCore.QRectF(0, 0, size.width, size.height))
-			if box.width() > 0 and box.height() > 0:
-				fontScale = max(0.001, self.fontScale.getValue(frame))
-				aspect = max(0.001, rc.pixelAspect)
-				width = box.width() * aspect / fontScale
-				height = box.height() / fontScale
-				# Resolve HTML point sizes into reference pixels before layout,
-				# independent of screen DPI, proxy and the current render tile.
-				doc = self._document(message, frame, width, QtGui, QtCore)
-				y = (height - doc.size().height()) * (0.0, 0.5, 1.0)[int(self.yjustify.getValue(frame))]
-				matrix = self._matrix(rc, frame, box, fontScale, aspect, y, boxMode, QtGui)
-				clip = QtCore.QRectF(0, -y, width, height) if self.clip.getValue(frame) else None
-
-				if self.shadowEnabled.getValue(frame):
-					blur = max(0.0, self.shadowSoftness.getValue(frame)) * rc.proxy.scale
-					# Three box passes approximate a Gaussian. Their exact, finite
-					# support supplies the halo, including outside the image format.
-					radius = int((math.sqrt(1 + 4 * blur * blur) - 1) / 2)
-					high = round((blur * blur - radius * (radius + 1)) * 3 / (2 * (radius + 1)))
-					radii = [radius] * (3 - high) + [radius + 1] * high
-					pad = sum(radii)
-					work = Recti(roi.left - pad, roi.top - pad, roi.right + pad, roi.bottom + pad)
-					shadow = self._paint(doc, matrix, clip, work, QtGui, QtCore,
-						self.shadowX.getValue(frame) * rc.proxy.scale,
-						self.shadowY.getValue(frame) * rc.proxy.scale)
-					shadowRaster = self._raster(shadow, work)
-					coverage = np.asarray(shadowRaster)[:, :, 3]
-					for radius in radii:
-						if radius:
-							coverage = self._boxBlur(coverage, radius, np)
-							coverage = self._boxBlur(coverage.T, radius, np).T
-					c = self.shadowColor.getValue(frame)
-					pixels[:, :, 3] = np.clip(coverage, 0, 1) * min(1.0, max(0.0, c.a))
-					pixels[:, :, :3] = pixels[:, :, 3:4] * (c.r, c.g, c.b)
-
-				text = self._raster(self._paint(doc, matrix, clip, roi, QtGui, QtCore), roi)
-				foreground = np.asarray(text)
-				pixels *= 1.0 - foreground[:, :, 3:4]
-				pixels += foreground
-		pixels *= opacity
-
+		premultiply = bool(self.premultiply.getValue(frame))
 		if image is not None:
-			# Raster.composite() replaces the background alpha and expects straight
-			# foreground RGB. Use explicit source-over for a transparent background
-			# and our premultiplied text; keep input HDR values intact.
-			background = self.allocate(rc, roi=roi, channels=Channel_RGBA, format=Depth_Float32)
-			background.clear()
-			background.copy(image, roi=roi)  # RGB -> RGBA with opaque alpha
-			bg = np.asarray(background)
-			remain = 1.0 - pixels[:, :, 3:4]
-			pixels[:, :, :3] += bg[:, :, :3] * bg[:, :, 3:4] * remain
-			pixels[:, :, 3:4] += bg[:, :, 3:4] * remain
-		if not self.premultiply.getValue(frame):
-			alpha = pixels[:, :, 3:4]
-			np.divide(pixels[:, :, :3], alpha, out=pixels[:, :, :3], where=alpha > 0)
+			# RGBx's fourth channel carries Source's Transparent/Opaque fill.
+			# convert() preserves it; copy(RGB -> RGBA) would force opaque alpha.
+			out.copy(image.convert(Depth_Float32, Channel_RGBA), roi=roi)
+			if image.channelMask == Channel_RGBA:
+				pixels = np.asarray(out)
+				if premultiply:
+					pixels[:, :, :3] *= pixels[:, :, 3:4]
+				else:
+					np.copyto(pixels[:, :, :3], 0, where=pixels[:, :, 3:4] == 0)
+		if not message or opacity == 0 or rc.canceled:
+			return out
+		QtCore, QtGui = self._QtCore, self._QtGui
+		size = rc.proxy.sessionSize
+		boxMode = int(self.mode.getValue(frame)) == 1
+		box = (self._qrect(self.box.getValue(frame), rc.session, QtCore) if boxMode
+			   else QtCore.QRectF(0, 0, size.width, size.height))
+		if box.width() <= 0 or box.height() <= 0:
+			return out
+		fontScale = max(0.001, self.fontScale.getValue(frame))
+		aspect = max(0.001, rc.pixelAspect)
+		width, height = box.width() * aspect / fontScale, box.height() / fontScale
+		doc = self._document(message, frame, width, QtGui, QtCore)
+		y = (height - doc.size().height()) * (0.0, 0.5, 1.0)[int(self.yjustify.getValue(frame))]
+		matrix = self._matrix(rc, frame, box, fontScale, aspect, y, boxMode, QtGui)
+		clip = QtCore.QRectF(0, -y, width, height) if self.clip.getValue(frame) else None
+		bounds = self._bounds(doc, matrix, clip, QtCore)
+		textROI = bounds.clip(roi)
+		text = (self._raster(self._paint(doc, matrix, clip, textROI, QtGui, QtCore), textROI, np)
+				if textROI.valid and textROI.width > 0 and textROI.height > 0 else None)
+
+		color = self.shadowColor.getValue(frame)
+		if not self.shadowEnabled.getValue(frame) or color.a <= 0:
+			if text is not None:
+				self._over(out, text, opacity, premultiply)
+			return out
+
+		# Only the shadow's affected pixels and finite blur halo need painting.
+		blur = max(0.0, self.shadowSoftness.getValue(frame)) * rc.proxy.scale
+		radius = int((math.sqrt(1 + 4 * blur * blur) - 1) / 2)
+		high = round((blur * blur - radius * (radius + 1)) * 3 / (2 * (radius + 1)))
+		radii = [radius] * (3 - high) + [radius + 1] * high
+		pad = sum(radii)
+		dx, dy = self.shadowX.getValue(frame) * rc.proxy.scale, self.shadowY.getValue(frame) * rc.proxy.scale
+		shadowROI = Recti(math.floor(bounds.left + dx) - pad, math.floor(bounds.top + dy) - pad,
+			math.ceil(bounds.right + dx) + pad, math.ceil(bounds.bottom + dy) + pad).clip(roi) if bounds.valid else Recti()
+		if not shadowROI.valid or shadowROI.width == 0 or shadowROI.height == 0:
+			if text is not None:
+				self._over(out, text, opacity, premultiply)
+			return out
+		layerROI = shadowROI | text.dod if text is not None else shadowROI
+		layer = self.allocate(rc, roi=layerROI, channels=Channel_RGBA, format=Depth_Float32)
+		layer.clear()
+		work = shadowROI.adjusted(-pad, -pad, pad, pad)
+		shadow = self._paint(doc, matrix, clip, work, QtGui, QtCore, dx, dy)
+		coverage = np.asarray(self._bytes(shadow))[:, :, 3].astype(np.float32) * (1.0 / 255.0)
+		for radius in radii:
+			if radius:
+				coverage = self._boxBlur(coverage, radius, np)
+				coverage = self._boxBlur(coverage.T, radius, np).T
+		pixels = np.asarray(layer)
+		shadowPixels = pixels[shadowROI.top - layerROI.top:shadowROI.bottom - layerROI.top,
+			shadowROI.left - layerROI.left:shadowROI.right - layerROI.left]
+		shadowPixels[:, :, 3] = np.clip(coverage, 0, 1) * min(1.0, color.a)
+		shadowPixels[:, :, :3] = shadowPixels[:, :, 3:4] * (color.r, color.g, color.b)
+		if text is not None:
+			self._over(layer, text, 1.0, True)
+		# Apply global opacity once, after combining text and shadow.
+		self._over(out, layer, opacity, premultiply)
 		return out
+
+	def _over(self, background, foreground, opacity, premultiply):
+		roi = foreground.dod.clip(background.dod)
+		if not roi.valid or roi.width == 0 or roi.height == 0:
+			return
+		if self._nativeComposite:
+			result = background.composite(foreground, roi=roi, opacity=opacity,
+				premultiplied=True, background_premultiplied=premultiply)
+			background.copy(result, roi=roi)
+			return
+		# Older 2027 builds: keep the same source-over math on this small patch.
+		np = self._np
+		bg = np.asarray(background)
+		bg = bg[roi.top - background.dod.top:roi.bottom - background.dod.top,
+			roi.left - background.dod.left:roi.right - background.dod.left]
+		fg = np.asarray(foreground)
+		fg = fg[roi.top - foreground.dod.top:roi.bottom - foreground.dod.top,
+			roi.left - foreground.dod.left:roi.right - foreground.dod.left].astype(np.float32)
+		fg *= opacity / 255.0 if foreground.format == fx.Depth_8 else opacity
+		alpha = fg[:, :, 3:4] + bg[:, :, 3:4] * (1.0 - fg[:, :, 3:4])
+		bg[:, :, :3] *= (1.0 - fg[:, :, 3:4]) if premultiply else bg[:, :, 3:4] * (1.0 - fg[:, :, 3:4])
+		bg[:, :, :3] += fg[:, :, :3]
+		if not premultiply:
+			np.divide(bg[:, :, :3], alpha, out=bg[:, :, :3], where=alpha > 0)
+		bg[:, :, 3:4] = alpha
+
+	@staticmethod
+	def _bounds(doc, matrix, clip, QtCore):
+		# Natural line bounds retain alignment and decorations; raw glyph boxes
+		# include bearings/italic overhang outside those logical line rectangles.
+		layout = doc.documentLayout()
+		bounds = QtCore.QRectF()
+		block = doc.begin()
+		while block.isValid():
+			textLayout = block.layout()
+			position = layout.blockBoundingRect(block).topLeft()
+			for i in range(textLayout.lineCount()):
+				line = textLayout.lineAt(i)
+				bounds = bounds.united(line.naturalTextRect().translated(position))
+				for run in line.glyphRuns():
+					bounds = bounds.united(run.boundingRect().translated(position))
+					font = run.rawFont()
+					for glyph, point in zip(run.glyphIndexes(), run.positions()):
+						bounds = bounds.united(font.boundingRect(glyph).translated(point + position))
+			if block.textList() or block.blockFormat().background().style() != QtCore.Qt.NoBrush:
+				bounds = bounds.united(layout.blockBoundingRect(block).adjusted(-doc.indentWidth(), 0, 0, 0))
+			block = block.next()
+		# Frames/tables and a body background can paint outside the text itself.
+		root = doc.rootFrame()
+		if root.childFrames() or root.frameFormat().background().style() != QtCore.Qt.NoBrush:
+			bounds = bounds.united(layout.frameBoundingRect(root))
+		if clip is not None:
+			bounds = bounds.intersected(clip)
+		if bounds.isEmpty():
+			return Recti()
+		bounds = matrix.mapRect(bounds)
+		# Two device pixels cover antialiasing at transformed edges.
+		return Recti(math.floor(bounds.left()) - 2, math.floor(bounds.top()) - 2,
+			math.ceil(bounds.right()) + 2, math.ceil(bounds.bottom()) + 2)
 
 	@staticmethod
 	def _boxBlur(values, radius, np):
@@ -212,7 +290,7 @@ class TextNode(NodeProxy):
 
 	@staticmethod
 	def _canvas(width, height, QtGui):
-		image = QtGui.QImage(width, height, QtGui.QImage.Format_RGBA32FPx4_Premultiplied)
+		image = QtGui.QImage(width, height, QtGui.QImage.Format_RGBA8888_Premultiplied)
 		if image.isNull():
 			raise MemoryError("Text: could not allocate the text image")
 		image.setDotsPerMeterX(round(72 / 0.0254))
@@ -318,12 +396,13 @@ class TextNode(NodeProxy):
 		return image
 
 	@staticmethod
-	def _raster(image, roi):
-		# RGBA float QImage rows are tightly packed; fromBuffer copies and converts
-		# the explicit RGBA order into the host's native channel order. No 8-bit
-		# intermediate, file I/O or borrowed pixel storage is involved.
-		pixels = image.constBits().cast("f", shape=[image.height(), image.width(), 4])
-		return fx.Raster.fromBuffer(pixels, dod=roi)
+	def _bytes(image):
+		return image.constBits().cast("B", shape=[image.height(), image.width(), 4])
+
+	@staticmethod
+	def _raster(image, roi, np):
+		# The measured DOD already includes glyph overhang and antialiasing.
+		return fx.Raster.fromBuffer(np.asarray(TextNode._bytes(image)), dod=roi)
 
 
 fx.addNode(name=TextNode.TYPE, label="Text", type=TextNode, categories=["Image"],

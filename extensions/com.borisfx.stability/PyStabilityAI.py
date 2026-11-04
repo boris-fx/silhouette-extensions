@@ -262,8 +262,8 @@ class PyStabilityAI(NodeProxy):
         if self._will_composite(input_rgba):
             roi = options.roi
             mode_name = self._mode_name()
-            # composite() requires matching format + channels, and we edit the
-            # sample's alpha in place below (copyChannel) — so it must be a
+            # Match format/channels for older hosts. We edit the sample's
+            # alpha in place below (copyChannel), so it must be a
             # uniquely-owned raster, never one handed straight back from getImage()
             # (which may be cache-backed).  convert() allocates a fresh raster
             # whenever it changes the format/channels; if nothing needs converting,
@@ -274,10 +274,14 @@ class PyStabilityAI(NodeProxy):
             else:
                 image = image.clone()
             image.copyChannel(input_img, 3, roi=roi)          # carry the input alpha (the matte)
-            if mode_name == "inpaint":
-                image = input_img.composite(image, roi=roi)   # result over input
-            elif mode_name == "outpaint":
-                image = image.composite(input_img, roi=roi)   # input over result
+            # This alpha is an edit mask, not two surfaces' coverage. Blend
+            # against an opaque plate, then restore the original matte so true
+            # source-over does not union the same mask with itself (2a - a²).
+            background, foreground = ((input_img, image) if mode_name == "inpaint" else (image, input_img))
+            opaque = self.allocate(background, roi=roi, channels=Channel_RGBA)
+            opaque.copy(background.convert(background.format, Channel_RGB), roi=roi)
+            image = opaque.composite(foreground, roi=roi)
+            image.copyChannel(input_img, 3, roi=roi)
         return image
 
     # ---- render helpers ----

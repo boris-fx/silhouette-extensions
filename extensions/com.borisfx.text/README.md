@@ -73,10 +73,18 @@ connections. Normal extension loading only registers the node.
 
 ## How it is built
 
-A render-local `QTextDocument` lays out and paints the message into a float RGBA
-image. Numpy performs premultiplied source-over composition and the shadow blur.
-The renderer preserves HDR input values and handles proxy resolution, tiled
-rendering and non-square pixels. Compiled dependencies are imported in the
+A render-local `QTextDocument` measures the transformed text bounds, then paints
+only the required region into a premultiplied 8-bit RGBA image. Shadow bounds
+include their offset and blur support. There is no alpha scan or trim step.
+Composition clips these DODs to the background, leaving the rest untouched.
+
+On hosts with the updated `Raster.composite()` API, the byte pixels convert to
+float during source-over blending. Older 2027 builds use the same math through
+numpy on the bounded patch. The shadow blur uses numpy; input values and shadow
+colours retain float/HDR precision. Text colour and coverage have byte precision.
+RGBx input retains its source RGB and stored alpha, including Source's
+Transparent alpha fill. The renderer handles proxy resolution, tiled rendering
+and non-square pixels. Compiled dependencies are imported in the
 node's main-thread `setup()`; Qt documents, painters and images are local to each
 render call.
 
@@ -94,8 +102,11 @@ With the extension loaded, run the rendering checks in a headless Silhouette:
 import runpy
 checks = runpy.run_path("/path/to/com.borisfx.text/tests/text_node_regression.py")
 checks["run"]()
+checks["run_layout"]()
 ```
 
 They use detached sessions and cover rich text, alignment, world-coordinate
 position/box layout, spacing, clipping, transforms, shadows, proxy/tiled renders,
-RGB/RGBA backgrounds, opacity, premultiplication and HDR composition.
+RGB/RGBA backgrounds, opacity, premultiplication and HDR composition. The layout
+checks also compare measured DODs against oversized painting regions, including
+italic/rotated glyphs, backgrounds/lists and shadows cast by off-frame text.

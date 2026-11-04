@@ -1,6 +1,6 @@
 id          = "com.borisfx.text"
 name        = "Text"
-version     = "0.1.0"
+version     = "0.1.1"
 author      = "Boris FX"
 description = """
 Create titles, labels, credits and burn-ins over an image or transparency.

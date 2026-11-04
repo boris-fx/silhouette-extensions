@@ -157,6 +157,7 @@ def run(output_dir=None):
 	print("PASS: literal plain text, empty text and zero opacity")
 
 	# Exercise the real input port with RGB/HDR and translucent RGBA backgrounds.
+	setp(opacity=1.0)
 	class Background(fx.NodeProxy):
 		def __init__(self, *args, **kwargs):
 			self.output = self.addOutput("output", "Output")
@@ -171,8 +172,8 @@ def run(output_dir=None):
 			out = self.allocate(rc, roi=options.roi, channels=channels, format=fx.Depth_Float32)
 			a = np.asarray(out)
 			a[:, :, :3] = (2.0, 0.25, 0.125)
-			# Host RGB rasters use four storage channels; their unused alpha must
-			# become opaque when copied into the Text node's RGBA background.
+			# Match Source's Alpha Fill=Transparent: RGBx with a cleared fourth
+			# channel. Text must preserve it rather than assuming opaque alpha.
 			if a.shape[2] == 4:
 				a[:, :, 3] = 0.0 if channels == fx.Channel_RGB else 0.35
 			return out
@@ -183,7 +184,10 @@ def run(output_dir=None):
 	session.addNode(bg)
 	bg.port("output").connect(node.port("input"))
 	_, a = render()
-	np.testing.assert_allclose(a[300, 600], (2.0, 0.25, 0.125, 1.0), atol=1e-6)
+	np.testing.assert_allclose(a[300, 600], (2.0, 0.25, 0.125, 0.0), atol=1e-6)
+	assert a[:, :, 3].max() > 0 and a[:, :, 3].min() == 0
+	# RGBx keeps its plate colors while text adds coverage to alpha.
+	tiles_match(a)
 	bg.property("rgb").value = False
 	bg.invalidate()
 	node.invalidate()
@@ -200,7 +204,7 @@ def run(output_dir=None):
 	setp(textOnly=True)
 	_, a = render()
 	assert a[300, 600, 3] == 0
-	print("PASS: RGB opaque alpha, HDR, RGBA source-over and Text Only")
+	print("PASS: transparent RGBx alpha, retained plate RGB, HDR, RGBA source-over and Text Only")
 	print("Text node regression checks passed")
 
 
@@ -234,9 +238,9 @@ def run_layout():
 
 	text = Harness()
 	text._DEFAULT = cls._DEFAULT
-	for name in ("_boxBlur", "_qrect", "_canvas", "_raster"):
+	for name in ("_boxBlur", "_qrect", "_canvas", "_raster", "_bytes", "_bounds"):
 		setattr(text, name, getattr(cls, name))
-	for name in ("_document", "_matrix", "_paint"):
+	for name in ("_document", "_matrix", "_paint", "_over"):
 		setattr(text, name, types.MethodType(getattr(cls, name), text))
 	cls.__init__(text)
 	cls.setup(text)
@@ -281,3 +285,60 @@ def run_layout():
 	half = render()
 	assert max(abs(bounds(half) * 2 - b)) <= 3
 	print("PASS: Position moves text; world-coordinate Box stays fixed, clips and scales with proxy")
+
+	# Compare the measured painting region with a deliberately oversized region.
+	# This catches clipped bearings, decorations and shadows from off-frame text.
+	rc.proxy.renderSize, rc.proxy.scale = fx.Size(640, 360), 1.0
+	options.roi = fx.Recti(0, 0, 640, 360)
+	text.mode.value = 0
+	text.position.value = fx.Point(0, 0)
+	text.rotate.value = 0.0
+	text.scale.value = fx.Point(1, 1)
+	text.clip.value = False
+	text.xjustify.value = text.yjustify.value = 1
+	text.message.value = cls._DEFAULT
+	measured = text._bounds
+	paint = text._paint
+	painted = []
+	def record_paint(doc, matrix, clip, roi, QtGui, QtCore, *offset):
+		image = paint(doc, matrix, clip, roi, QtGui, QtCore, *offset)
+		assert image.format() == QtGui.QImage.Format_RGBA8888_Premultiplied
+		assert image.sizeInBytes() == roi.width * roi.height * 4
+		painted.append(roi)
+		return image
+	text._paint = record_paint
+	default = render()
+	assert len(painted) == 1 and painted[0].width * painted[0].height < 640 * 360 / 4
+
+	def full_region():
+		text._bounds = lambda *args: fx.Recti(-2048, -2048, 4096, 4096)
+		try:
+			return render()
+		finally:
+			text._bounds = measured
+
+	for message in (cls._DEFAULT,
+		'<!DOCTYPE HTML><html><body><p style="margin:0;font-family:Times;font-size:76pt;'
+		'font-style:italic;text-decoration:underline;">f j Ág\u0301</p><p>Second line</p></body></html>',
+		'<!DOCTYPE HTML><html><body style="background-color:#314159;"><p>Background</p></body></html>',
+		'<!DOCTYPE HTML><html><body><ul><li>one</li><li>two</li></ul></body></html>'):
+		text.message.value = message
+		for angle, scale in ((0.0, fx.Point(1, 1)), (23.0, fx.Point(1.1, .7)), (-11.0, fx.Point(-1, 1))):
+			text.rotate.value, text.scale.value = angle, scale
+			np.testing.assert_allclose(render(), full_region(), atol=2.0/255, rtol=0)
+
+	text.message.value = cls._DEFAULT
+	text.rotate.value = 0.0
+	text.scale.value = fx.Point(1, 1)
+	text.shadowEnabled.value = True
+	text.shadowSoftness.value = 8.0
+	text.shadowX.value = 350.0
+	text.shadowY.value = 5.0
+	text.position.value = session.imageToWorld(fx.Point(-100, 180))
+	shadow = render()
+	assert shadow[:, :, 3].sum() > 0
+	np.testing.assert_allclose(shadow, full_region(), atol=2.0/255, rtol=0)
+	for roi in (fx.Recti(180, 140, 260, 220), fx.Recti(260, 170, 330, 235)):
+		options.roi = roi
+		np.testing.assert_allclose(render(), shadow[roi.top:roi.bottom, roi.left:roi.right], atol=2e-5)
+	print("PASS: bounded 8-bit painting, italic/rotated glyphs, backgrounds/lists and off-frame shadow tiles")

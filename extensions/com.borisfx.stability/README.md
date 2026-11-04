@@ -48,7 +48,8 @@ entered there carries over.
 
 For **Inpaint** and **Outpaint**, the input's alpha is the mask. Turn on
 **Composite** to lay the result back over (inpaint) or under (outpaint) the
-input.
+input. The composite retains the input alpha as the edit mask, including soft
+edges; it does not combine that mask with itself as surface coverage.
 
 The modes, their endpoints, and the model list come from
 `stabilityai_config.json`, so following an API change is often a config edit
@@ -101,3 +102,16 @@ path to the worker in `SFX_CA_BUNDLE`.
 Earlier versions of Silhouette had a built-in Stability node. Projects that use
 it still open and still show the images they generated, but that node can no
 longer generate — add this extension's **Stability AI** node instead.
+
+## Compositing regression check
+
+With the extension loaded in a headless Silhouette:
+
+```python
+import runpy
+runpy.run_path("/path/to/com.borisfx.stability/tests/composite_regression.py")["run"]()
+```
+
+This uses local fixture images without service access. It checks inpaint/outpaint
+RGB and matte preservation across byte, half and float images, with both the
+older composite API and a model of corrected source-over.
