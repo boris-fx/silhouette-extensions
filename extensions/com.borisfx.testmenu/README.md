@@ -1,9 +1,10 @@
-# Test Menu — actions and menus from an extension
+# Test Menu
 
-The smallest useful example of an extension that contributes **commands**: it
-adds three `Action`s, two in a new top-level menu and one in a view's context
-menu. Loading the extension creates the menu; unloading removes it, with no
-restart.
+Try three simple commands in Silhouette's main menu and node-graph context menu.
+Each prints a message in the Script Console so you can see when it runs.
+Disabling the extension removes the commands without restarting Silhouette.
+
+This is a developer sample for trying custom menu commands.
 
 ## What you get
 

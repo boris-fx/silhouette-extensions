@@ -1,13 +1,12 @@
 id          = "com.borisfx.stability"
 name        = "Stability AI"
-version     = "1.0.1"
+version     = "1.0.2"
 author      = "Boris FX"
 description = """
-Stability AI image generation.  Contributes the Stability AI node (generate,
-inpaint, outpaint, erase, search-and-replace, background removal) backed by an
-out-of-process worker, plus the API-key options reachable from this page's
-Options button.  Self-contained: node, task provider, worker and the
-mode/model config all live inside the extension.
+Generate and edit images with Stability AI: create from a prompt, replace or
+erase objects, extend the frame, recolor an area, or remove a background.
+Continue working while images are generated, then choose from the results.
+Requires your own Stability AI API key; service usage may incur charges.
 """
 silhouette  = ">=2027"
 

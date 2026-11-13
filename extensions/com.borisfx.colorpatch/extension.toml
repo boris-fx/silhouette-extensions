@@ -1,12 +1,11 @@
 id          = "com.borisfx.colorpatch"
 name        = "Color Patch"
-version     = "0.1.2"
+version     = "0.1.3"
 author      = "Boris FX"
 description = """
-Paint out markers, blemishes and small objects with colour from around them.
-Corners mode fills a quad between four points with a smooth blend of what they
-sample; Shape mode fills a picked roto shape on the GPU, from colours sampled
-all the way round its edge, for a seamless clean-plate patch.
+Cover tracking markers, blemishes, and small objects with a patch that blends
+colors sampled from the surrounding image. Use four corners for a quick patch,
+or follow a roto shape for more control over its outline.
 """
 silhouette      = ">=2027"
 python_requires = ["numpy"]

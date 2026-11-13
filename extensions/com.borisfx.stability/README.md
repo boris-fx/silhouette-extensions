@@ -7,9 +7,6 @@ Generation runs as a **background task** — Silhouette stays usable while the
 request is in flight, and the results land in the node's asset catalog for you
 to pick from.
 
-It is also a compact, real-world example of a cloud-service node: a node, a
-task provider, and an fx-free worker process, in about 1,100 lines.
-
 ## Requirements
 
 - **Silhouette 2027** or newer (it uses the task manager, asset catalog, and

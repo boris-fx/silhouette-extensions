@@ -1,15 +1,12 @@
-# GenAI Emulator — the reference video-GenAI extension
+# GenAI Emulator
 
-This extension is a **complete, working simulation of a cloud video-GenAI
-service**.  Every stage of the real pipeline runs for real — rendering,
-tunneling, task submission, polling, download, asset publishing — except the
-"cloud", which is a bundled local emulator that echoes the input video back
-after a simulated generation delay.  Development and integration testing burn
-**no tokens**.
+Try a video-generation workflow without paid AI generation. Submit a clip,
+watch its progress, and receive the original clip back after a simulated delay.
+It does **not** generate new imagery.
 
-It is also the **template for integrating a real service** (Runway, etc.):
-the mechanics below are common to every provider — only the service adapter
-and configuration change.  See *Adding a real service*.
+This extension is for developers testing a service integration. The workflow
+below explains how submission, progress, and results fit together, and how to
+connect a real generation service.
 
 ## The pipeline
 

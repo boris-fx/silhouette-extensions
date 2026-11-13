@@ -41,6 +41,13 @@ Every extension needs:
 - a row in the extensions table of the top-level `README.md`: the website
   builds its cards, in that order, from that table
 
+Write the catalog blurb, manifest description, and README introduction for the
+person choosing a tool: explain what it does, when it helps, and any requirements
+that affect their decision. Lead with practical results, not APIs, dependencies,
+or how the code is organized. Put setup and controls before developer notes.
+Clearly label demonstrations and testing tools so they are not mistaken for
+production effects. Technical explanations are welcome further down the README.
+
 Optionally, add:
 
 - an `icon.png`: a square PNG, 256 × 256 pixels.  Silhouette shows it next

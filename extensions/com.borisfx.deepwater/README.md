@@ -1,18 +1,14 @@
-# Deep Water Themes — restyling Silhouette from an extension
+# Deep Water Themes
 
-An example of the smallest kind of extension there is: **no Python at all**,
-just a manifest and a folder of theme files. It contributes two colour themes in
-cool blue-greens, and demonstrates how one theme can inherit from another.
+Give Silhouette a cool blue-green interface. Choose **Deep Water** for a darker
+palette or **Shallows** for a lighter alternative in brighter rooms.
 
 ## What you get
 
 Two new entries in the **Theme** menu in Preferences:
 
-- **Deep Water** — cool desaturated blue-greens. The only warm colour in the
-  palette is `AccentAttention`, so the one thing that isn't blue is the thing
-  demanding your notice.
-- **Shallows** — Deep Water lifted a few stops for bright rooms. It defines only
-  five colours and inherits the other twenty-one from Deep Water.
+- **Deep Water** — muted blue-greens with warm highlights for alerts.
+- **Shallows** — a lighter version of Deep Water for bright rooms.
 
 Contrast sits deliberately between the built-in *Classic* and *Low Contrast*:
 flat enough that the UI stops competing with the image, not so flat that borders

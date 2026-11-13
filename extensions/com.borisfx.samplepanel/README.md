@@ -1,9 +1,10 @@
-# Sample Panel — a dockable panel from an extension
+# Sample Panel
 
-The smallest useful example of an extension that contributes **UI**: it adds a
-dockable panel built with PySide6. Loading the extension creates the panel and
-its *Window* menu entry; disabling or uninstalling it removes both, with no
-restart.
+Add a small panel with a click counter to Silhouette. Open it from the **Window**
+menu, move it, or dock it alongside other panels. Its layout is remembered across
+restarts; disabling the extension removes it without restarting Silhouette.
+
+This is a developer sample for trying custom panels.
 
 ## What you get
 

@@ -1,10 +1,11 @@
-# NAFNet Restore — Silhouette Python node
+# NAFNet Restore
 
-A reference Python **node extension** for Silhouette: single-image restoration
-with [NAFNet](https://github.com/megvii-research/NAFNet) (Simple Baselines for
-Image Restoration, ECCV 2022). Companion to `com.borisfx.xvfi` — the same
-end-to-end pattern (on-demand PyTorch, a vendored model, on-demand model
-weights fetched by a background task) applied to a single-image model.
+Reduce blur in an image or clip using the included GoPro deblurring model.
+Connect your footage, download the model from the node, and preview the result.
+Each frame is processed independently. NVIDIA CUDA is used where available;
+Mac and other systems without CUDA use the CPU.
+
+The restoration model is [NAFNet](https://github.com/megvii-research/NAFNet).
 
 ## What the node does
 
@@ -12,12 +13,8 @@ weights fetched by a background task) applied to a single-image model.
 frame is restored independently (no temporal window). The **Model** popup
 selects the task; the default is **GoPro deblurring** (NAFNet-width64).
 
-NAFNet is plain standard PyTorch (no custom ops), so it runs on **CUDA** (Linux/
-Windows NVIDIA) or **CPU**.  Apple **MPS** is **not used**: in-process, pip torch
-is bound to the ML SDK's libtorch, whose MPS backend hard-crashes in `F.pad`
-(`constant_pad_nd_mps`, `MPSAllocator.mm:654`) — confirmed from the full crash
-stack, and NAFNet pads every forward.  That's a genuine SDK MPS-backend bug, so
-Mac runs on **CPU** until the SDK libtorch is fixed.
+On Mac, processing currently uses the CPU. On supported NVIDIA systems,
+CUDA accelerates processing. Model downloads and setup are described below.
 
 ## Files
 

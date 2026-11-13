@@ -1,0 +1,20 @@
+id          = "com.borisfx.nodecolors"
+name        = "Node Colors"
+version     = "1.2.0"
+author      = "Boris FX"
+description = """
+Make node graphs easier to read with automatic colors for keyers, filters,
+transforms, and other node roles. Choose your own colors from a compact palette
+with familiar Nuke-style defaults, or update selected nodes in one undoable step.
+
+Requires Silhouette 2027 or newer. Coloring depends on each node's intent tags;
+nodes without a matching tag keep their existing color. Broader built-in tagging
+is planned for Silhouette 2027.5.
+"""
+silhouette  = ">=2027"
+requires_gui = true
+python_requires = []
+
+[contributes]
+actions = ["UpdateNodeColors"]
+hooks = ["object_created"]

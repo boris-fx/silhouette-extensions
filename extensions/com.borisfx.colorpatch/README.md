@@ -1,12 +1,10 @@
 # Color Patch
 
-Fill a region with colour sampled around it — a quick clean-plate patch for tracking
-markers, blemishes, signs and small objects. Two modes:
+Cover tracking markers, blemishes, signs, and small objects with color sampled
+from the surrounding image. Choose one of two modes:
 
-- **Corners** — four points; each averages the block of pixels under it, and the quad
-  between them is filled with a smooth bilinear blend of the four samples.
-- **Shape** — a shape picked from the **Transform** input becomes an N-gon patch, filled
-  on the GPU with the mean value interpolation of colours sampled round its edge.
+- **Corners** — position four sample points to make a patch that blends their colors.
+- **Shape** — choose a roto shape and fill it with colors sampled around its edge.
 
 ## Wiring
 

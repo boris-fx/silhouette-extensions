@@ -11,7 +11,7 @@ For every extension under extensions/ it writes:
     downloads/<id>.zip      the extension folder, zipped, ready to drag onto Silhouette
 
 Cards follow the order of the extensions table in the top-level README.md and
-take their two blurbs from it ("What it contributes", "What it demonstrates"),
+take their two blurbs from it ("What it does", "When to use it"),
 so that table is the one place to curate.  An extension missing from the table
 still gets a card, using the first sentence of its manifest description.
 
@@ -127,7 +127,7 @@ def _inline(md_text):
 
 
 def read_table_order():
-    """-> [(id, contributes_html, demonstrates_html)] from the README's table."""
+    """-> [(id, does_html, use_html)] from the README's table."""
     rows = []
     path = os.path.join(ROOT, "README.md")
     for line in open(path, encoding="utf-8"):
@@ -331,9 +331,9 @@ def index_page(exts):
 
     body = """<section class="hero">
   <h1>Add to Silhouette</h1>
-  <p class="lede">Nodes, themes, panels, menu commands, and more for Silhouette, written
-  in Python and free to use, copy, and take apart.  Each one is a working
-  example of the extension API, so it's also the quickest way to learn it.</p>
+  <p class="lede">Create titles and slates, clean up images, restore detail,
+  sample colors, and organize your node graphs. Browse the tools below, then
+  download an extension and drag it onto Silhouette to install.</p>
 </section>
 <section class="install">
   <h2>Installing an extension</h2>

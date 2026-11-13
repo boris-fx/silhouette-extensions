@@ -1,12 +1,11 @@
 id          = "com.borisfx.testmenu"
 name        = "Test Menu"
-version     = "1.0.0"
+version     = "1.0.1"
 author      = "Boris FX"
 description = """
-A minimal example of contributing commands: two actions under a new top-level
-"Test" menu, plus one context-menu action in the Trees view.  Loading the
-extension creates the menu and unloading (disable or uninstall) removes it —
-no restart.
+Add a Test menu with Say Hello and Say Goodbye, plus a command in the node-graph
+context menu. The commands print to the Script Console so you can check that
+they ran. A developer sample for trying custom menu commands.
 """
 silhouette  = ">=2027"
 
